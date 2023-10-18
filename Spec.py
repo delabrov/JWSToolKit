@@ -1,11 +1,8 @@
 import numpy as np
 
-
-
 c_sp = 299792458            # Speed of light (m/s)
 
 class Spec:
-
     def __init__(self, wvs, values, units='MJy/sr'):
 
         if wvs.shape[0] != values.shape[0]:
@@ -14,7 +11,6 @@ class Spec:
             self.wvs = wvs                      # Wavelength grid (µm)
             self.values = values                # Spectrum values
             self.units = units                  # Spectrum values units
-
     def convert(self, units, px_area=1):
 
         all_units = ['MJy/sr', 'Jy', 'erg s-1 cm-2 Hz-1', 'erg s-1 cm-2 micron-1']
@@ -88,7 +84,7 @@ class Spec:
 
 
         return
-    def cut(self, min, max, units='wav', wv_ref = None):
+    def cut(self, min, max, units='wav', wv_ref=None):
 
         all_units = ['wav', 'vel']
 
@@ -100,23 +96,41 @@ class Spec:
                 raise AssertionError("Bounds are given in velocities. No reference wavelength has been specified for the 'wv_ref' parameter.")
             elif not isinstance(wv_ref, (int, float)) or wv_ref <= 0:
                 raise AssertionError("The reference wavelength is invalid. It must be an integer float and given in km/s.")
+            else:
+                rvs = (c_sp * (self.wvs - wv_ref) / wv_ref) / 1000  # km/s
+                idxs_cut = np.where(np.logical_and(rvs >= min, rvs <= max))
+                wvs_cut = self.wvs[idxs_cut]
+                values_cut = self.values[idxs_cut]
+                spec_cut = Spec(wvs_cut, values_cut, units=self.units)
 
         else:
-            print('caca')
             if units == all_units[0]:
                 idxs_cut = np.where(np.logical_and(self.wvs >= min, self.wvs <= max))
                 wvs_cut = self.wvs[idxs_cut]
                 values_cut = self.values[idxs_cut]
+                spec_cut = Spec(wvs_cut, values_cut, units=self.units)
 
-                return Spec(wvs_cut, values_cut)
+        return spec_cut
+    def sub_baseline(self, wv_line, mask_rv=250, deg=2):
 
-            elif units == all_units[1]:
+        rvs = (c_sp * (self.wvs - wv_line) / wv_line) / 1000  # km/s
 
-                rvs = (c_sp * (self.wvs - wv_ref) / wv_ref) / 1000          # km/s
-                idxs_cut = np.where(np.logical_and(rvs >= min, rvs <= max))
-                wvs_cut = self.wvs[idxs_cut]
-                values_cut = self.values[idxs_cut]
+        idxs_line = np.where(np.logical_and(rvs >= -mask_rv, rvs <= mask_rv))
 
-                return Spec(wvs_cut, values_cut)
+        print()
+
+        idxs_cont = np.concatenate([np.arange(0,idxs_line[0][0]+1), np.arange(idxs_line[0][-1], np.shape(self.values)[0])])
+
+
+
+        wvs_cont = self.wvs[idxs_cont]
+        spec_cont = self.values[idxs_cont]
+
+        params = np.polyfit(wvs_cont, spec_cont, deg=deg)
+        baseline = np.poly1d(params)(self.wvs)
+
+        spec_cont_sub = self.values - baseline
+
+        return Spec(self.wvs, spec_cont_sub, units=self.units)
 
 

@@ -13,11 +13,9 @@ c_sp = 299792458        # Speed of light (m/s)
 """
 .info (Taille, Nom, Surf px, coords centre, instrum, wvs min/max/step, ID, filtre, units)
 .copy(Cube)
-.rotate(angle)
 .reduce(taille spatiale ou spectrale)
 .plot ?
 .mean_spectrum
-
 """
 
 class Cube:
