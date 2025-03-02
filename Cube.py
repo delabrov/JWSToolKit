@@ -1,9 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
 from astropy.wcs import WCS
 from photutils import CircularAperture, aperture_photometry, ApertureStats
 from scipy import ndimage
+from tqdm import tqdm
+import warnings
 
 from Spec import Spec
 
@@ -41,14 +44,17 @@ class Cube:
             self.errs = err_hdu.data                                # Data cube errors
             self.size = self.data.shape                             # Data cube size
             self.px_area = float(self.data_header['PIXAR_SR'])      # Pixel area (steradian)
-            self.instrument = self.primary_header['INSTRUME']       # Instrument
-    def wvs(self, units='um'):
+            self.units = self.data_header['BUNIT']
+
+
+
+    def get_wvs(self, units='um'):
         """Returns the wavelength grid of the data cube
 
         Parameters
         ----------
         units : str, optional
-            The character string specifies the units of the wavelengths.
+            The character string specifying the units of the wavelengths.
 
         Returns
         ----------
@@ -73,7 +79,69 @@ class Cube:
             if units == all_units[0]: return wgrid
             elif units == all_units[1]: return wgrid * 1e4
             elif units == all_units[2]: return wgrid * 1e3
-    def extract_spec(self, radius, position, err=False, units='Jy'):
+
+    def info(self):
+
+        dither_bool = False
+        if self.primary_header['NUMDTHPT'] > 1:
+            dither_bool = True
+
+
+        print()
+        print('__________ DATA CUBE INFORMATION __________')
+        print('Data file name:' + self.file_name)
+        print('Program PI: ' + self.primary_header['PI_NAME'] + ', for the project: ' + self.primary_header['TITLE'])
+        print('Program ID: ' + self.primary_header['PROGRAM'])
+        print('Target: ' + self.primary_header['TARGNAME'])
+        print('Telescope: ' + self.primary_header['TELESCOP'] + ' \ Instrument: ' + self.primary_header['INSTRUME'])
+        print('Configuration: ' + self.primary_header['GRATING'] + ' + ' + self.primary_header['FILTER'])
+        print('Number of integrations, groups and frames: ' + str(self.primary_header['NINTS']) + ', ' + str(self.primary_header['NGROUPS']) + ', ' + str(self.primary_header['NFRAMES']))
+        print('Dither strategy: ' + str(dither_bool))
+
+        if dither_bool:
+            print('Dither patern type: ' + self.primary_header['PATTTYPE'])
+
+        print()
+        print('Date and time of observations: ' + self.primary_header['DATE-OBS'] + ' | ' + self.primary_header['TIME-OBS'])
+        print('Target position in the sky: RA(J2000) = ' + str(self.primary_header['TARG_RA']) + ' , Dec(J2000) = ' + str(self.primary_header['TARG_DEC']))
+        print('Effecive Exposure Time: ' + str(self.primary_header['EFFEXPTM']) + ' s')
+        print('Total Exposure Time (with overheads): ' + str(self.primary_header['DURATION']) + ' s')
+
+        print()
+
+        dim_data = self.data_header['NAXIS']
+        data_type = 'None'
+        data_shape = []
+
+        for i in range(dim_data):
+            data_shape.append(self.data_header['NAXIS{}'.format(int(i+1))])
+
+        if dim_data == 3:
+            data_type = 'Data Cube'
+            print('Data type and shape: ' + data_type + ' | ' + str(data_shape[0]) + ', ' + str(data_shape[1]) + ', ' + str(data_shape[2]) + ' (x, y, wvs)')
+
+            pixel_unit = self.data_header['CUNIT1']
+
+            if pixel_unit == 'deg':
+                x_px_size_deg = self.data_header['CDELT1']
+                y_px_size_deg = self.data_header['CDELT2']
+
+                print('Spatial pixel sizes in ' + pixel_unit + ' (dx, dy): ' + str(x_px_size_deg) + ', ' + str(y_px_size_deg))
+                print('Spatial pixel sizes in arcsec (dx, dy): ' + str(round(x_px_size_deg * 3600, 4)) + ', ' + str(round(y_px_size_deg * 3600, 4)))
+
+
+            dwvs_unit = self.data_header['CUNIT3']
+
+            if dwvs_unit == 'um':
+                print('Spectral pixel size (µm): ' + str(round(self.data_header['CDELT3'], 6)))
+
+            print('Spectral range of observations (µm): ' + str(self.data_header['WAVSTART'] * 1e6) + ' - ' + str(self.data_header['WAVEND'] * 1e6))
+
+            print('Units of spectral pixel values: ' + self.data_header['BUNIT'])
+
+        print()
+
+    def extract_spec_circ_aperture(self, radius, position, err=False, units='Jy'):
         """Extracts a summed spectrum in a circular aperture
 
         Parameters
@@ -95,7 +163,7 @@ class Cube:
             and the second containing erros associated with flux values.
         """
 
-        all_units = all_units = ['Jy', 'erg s-1 cm-2 micron-1', 'erg s-1 cm-2 Hz-1']
+        all_units = all_units = ['Jy', 'erg s-1 cm-2 um-1', 'erg s-1 cm-2 Hz-1']
 
         if not isinstance(radius, int) and radius > 0:
             raise TypeError("The input radius is invalid. It must be an positive integer.")
@@ -104,13 +172,14 @@ class Cube:
         elif (not isinstance(position[0], int)) or (not isinstance(position[1], int)) or position[0] < 0 or position[1] < 0:
             raise TypeError("The input position is invalid. Values must be positive integers.")
         elif (units not in all_units) or (not isinstance(units, str)):
-            raise Exception("The input units are invalid. They must be one of the following units: Jy, erg s-1 cm-2 micron-1, erg s-1 cm-2 Hz-1")
+            raise Exception("The input units are invalid. They must be one of the following units: Jy, erg s-1 cm-2 um-1, erg s-1 cm-2 Hz-1")
         else:
 
             spec_len = self.size[0]
             spec = np.zeros(spec_len)
 
-            for i in range(spec_len):
+            print('__________ Spectrum extraction __________')
+            for i in tqdm(range(spec_len)):
 
                 ch_map = self.data[i,:,:]           # MJy/sr
                 nan_idxs = np.isnan(ch_map)
@@ -122,6 +191,7 @@ class Cube:
 
                 spec[i] = apertstats.sum
 
+            print()
 
             if units == all_units[0]:
                 return spec
@@ -130,8 +200,9 @@ class Cube:
                 if units == all_units[2] :
                     return spec
                 elif units == all_units[1]:
-                    spec *= (c_sp * 1e6 / (self.wvs(units='um') ** 2))
+                    spec *= (c_sp * 1e6 / (self.get_wvs(units='um') ** 2))
                     return spec
+
     def get_world_coords(self, coords):
         """Returns the coordinates in degrees (R.A., Dec.) of one or more pixel positions in the data cube.
 
@@ -150,6 +221,8 @@ class Cube:
              sub-lists containing respectively the R.A., Dec. positions of the different points.
         """
 
+        warnings.filterwarnings("ignore")
+
         if not isinstance(coords, list):
             raise TypeError('The input coordinates are invalid. They must be a list of two elements or a list of sublist as follow: [[x1, x2, ...], [y1, y2, ...]]')
         else:
@@ -164,6 +237,7 @@ class Cube:
             coords_proj = wcs_sci.pixel_to_world_values(coords[0], coords[1])
 
             return coords_proj
+
     def get_px_coords(self, coords):
         """Returns the coordinates in pixels (x,y) of one or more pixel positions in the data cube.
 
@@ -196,6 +270,100 @@ class Cube:
             coords_proj = wcs_sci.world_to_pixel_values(coords[0], coords[1])
 
             return coords_proj
+
+    def line_emission_map(self, wv_line, continuum_range=2000, line_width=400, continuum_degree=1, map_units='MJy um sr-1', control_plot=False):
+        """Builds the integrated emission map of a line at a given wavelength
+
+        Parameters
+        ----------
+        wv_line : float
+            Wavelength in vacuum and at rest of the emission line, given in µm.
+        continuum_range : float, optional
+            Spectral half-interval used to adjust the spectrum continuum, given in km/s. The interval is centered on the wavelength of the line.
+        line_width : float, optional
+            Spectral width of the emission line, given in km/s.
+        continuum_degree : int, optional
+            Polynomial order used to fit the continuum around the line.
+        map_units : str, optional
+            Map pixel units.
+        control_plot : bool, optional
+            If True, show the integrated emission map.
+
+        Returns
+        ----------
+        list
+            The integrated emission map, with the same dimensions as the spatial dimensions of the initial data cube. 
+        """
+
+        all_map_units = ['MJy/sr um', 'erg s-1 cm-2 sr-1']
+        wvs_units = 'um'
+
+        if not isinstance(map_units, str) or map_units not in all_map_units:
+            raise TypeError('The input units are invalid. They must be one of the following units: MJy um sr-1, erg s-1 cm-2 sr-1')
+        else:
+
+            integrated_map = np.full((self.size[1], self.size[2]), np.nan)
+            err_integrated_map = np.copy(integrated_map)
+
+            wvs_cube = self.get_wvs(units=wvs_units)
+
+
+            print('__________ Construction of the integrated emission map of the line at {} µm __________'.format(wv_line))
+            for i in tqdm(range(self.size[1])):
+                for j in range(self.size[2]):
+
+                    full_spectrum_array = self.data[:,i,j]
+                    full_spectrum = Spec(wvs_cube, full_spectrum_array, units=self.units)
+
+                    if map_units == 'erg s-1 cm-2 sr-1':                        # MJy/sr -> erg s-1 cm-2 sr-1 µm-1
+                        full_spectrum.convert(units='erg s-1 cm-2 um-1 sr-1')
+
+
+                    sliced_spectrum = full_spectrum.cut(-continuum_range, continuum_range, units='vel', wv_ref=wv_line)
+
+
+                    if not True in np.isnan(sliced_spectrum.values):
+
+                        sliced_spectrum_baseline_subtracted = sliced_spectrum.sub_baseline(wv_line=wv_line, mask_rv=line_width/2, deg=continuum_degree, control_plot=False)
+
+                        flux_line, err_flux_line = sliced_spectrum_baseline_subtracted.line_integ(wv_line=wv_line, profile=None, line_width=line_width, control_plot=False)
+                        integrated_map[i,j] = flux_line
+                        err_integrated_map[i,j] = err_flux_line
+
+
+            if control_plot:
+
+                std_map = np.nanstd(integrated_map)
+                mediane_map = np.nanmedian(integrated_map)
+
+                fig, ax = plt.subplots(figsize=(6,5))
+
+                im = ax.imshow(integrated_map, origin='lower', cmap='magma', vmin=std_map)
+                divider = make_axes_locatable(ax)
+                cax = divider.append_axes("right", size="5%", pad=0.05)
+                cbar = fig.colorbar(im, cax=cax)
+                cbar.set_label("Integrated emission (" + map_units  +')' , fontsize=12)
+
+                ax.set_title('Integrated line emission map @ {:.3f} µm'.format(wv_line))
+
+                fig.tight_layout()
+                plt.show()
+                plt.close()
+
+
+
+            print()
+
+            return integrated_map
+
+
+
+
+
+
+
+
+
     def rotate(self, angle):
 
         new_cube = np.full(self.size, np.nan)
@@ -219,3 +387,14 @@ class Cube:
 
         return new_cube
 
+
+
+
+
+
+
+
+
+
+
+# ________ FIN _________

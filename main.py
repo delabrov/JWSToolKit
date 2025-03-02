@@ -4,22 +4,58 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-file = "/Users/delabrov/Desktop/obs_finales/NIRSpec/jw01644005001_05101_nirspec_g235h-f170lp_s3d.fits"
+file = "/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644_nirspec_g140h-f100lp_s3d.fits"
 cube = Cube(file)
-wvs = cube.wvs()
-spec = cube.extract_spec(radius = 6, position = (28,28), units = 'erg s-1 cm-2 micron-1')
-spec = Spec(wvs, spec, units = 'erg s-1 cm-2 micron-1')
-spec_red = spec.cut(min = -1000, max = 1000, units = 'vel', wv_ref = 2.121833725)
-spec_contSub = spec_red.sub_baseline(wv_line = 2.121833725)
+wvs = cube.get_wvs()
+
+cube.info()
+
+int_map = cube.line_emission_map(wv_line = 1.64355271, map_units='erg s-1 cm-2 sr-1', control_plot=False)
 
 
 
 
 
-plt.plot(spec_red.wvs, spec_red.values, color='black')
-plt.plot(spec_contSub.wvs, spec_contSub.values, color='green')
-plt.show()
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+spec = cube.extract_spec_circ_aperture(4, [27,27], units='Jy')      # Spectrum extraction
+
+fig, ax = plt.subplots(figsize=(9,5))
+ax.step(wvs, spec, color='black')
+ax.set_xlabel('Wavelength (µm)')
+ax.set_ylabel('Flux density (Jy)')
+#plt.show()
+plt.close()
+
+spectrum = Spec(wvs, spec, units='Jy')
+spectrum.convert(units='erg s-1 cm-2 um-1')                         # Conversion
+spectrum_red = spectrum.cut(-2000, 2000, units='vel', wv_ref=2.12)
+spectrum_baseline_sub = spectrum_red.sub_baseline(wv_line=2.1218, control_plot=False)
+flux_line, err_flux_line = spectrum_baseline_sub.line_integ(wv_line=2.1218, profile='gaus', control_plot=False)
+vel_line, err_vel_line = spectrum_baseline_sub.line_velocity(wv_line=2.1218, control_plot=True)
+"""
