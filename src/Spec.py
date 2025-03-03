@@ -29,7 +29,8 @@ class Spec:
             
         Returns
         ----------
-
+        Spec 
+            The initial spectrum with the y-axis converted to the chosen unit. 
         """
 
         all_units = ['MJy/sr', 'Jy', 'erg s-1 cm-2 Hz-1', 'erg s-1 cm-2 um-1', 'erg s-1 cm-2 um-1 sr-1']
@@ -107,6 +108,25 @@ class Spec:
         return
 
     def cut(self, min, max, units='wav', wv_ref=None):
+        """Extract a part of the spectrum using limits of the requiered interval.
+
+        Parameters 
+        ----------
+        min : float 
+            Value of the lower limit of the cut spectrum interval. If no unit is specified, or the specified unit is 'wav', then the value is a wavelength, in µm.
+        max : float
+            Value of the upper limit of the cut spectrum interval. If no unit is specified, or the specified unit is 'wav', then the value is a wavelength, in µm. 
+        units : str, optional
+            Unit of the x-axis of the spectrum. If the unit is 'wav', then the x-axis values are wavelengths, and the interval limits must be given in wavelengths. If the unit is 'vel', then the values of the x-axis are radial velocities, and the limits of the interval must be given in km/s. The reference wavelength must then be specified to convert wavelengths into radial velocities (via the Doppler shift relation).
+        wv_ref : Optional
+            In the case of the 'vel' unit, a wavelength reference value must be given for conversion to radial velocity (via the Doppler shift relation), in µm.
+
+        Returns
+        ----------
+        Spec 
+            A Spec object cut by considering the limits of the interval given as input parameters 
+
+        """
 
         all_units = ['wav', 'vel']
 
@@ -135,6 +155,24 @@ class Spec:
         return spec_cut
 
     def sub_baseline(self, wv_line, mask_rv=200, deg=1, control_plot=False):
+        """Subtracts a baseline by fitting a polynomial around an emission line. 
+
+        Parameters 
+        ----------
+        wv_line : float
+             Wavelength in vacuum and at rest of the emission line, in µm.
+        mask_rv : float, optional
+            Half-width of the interval used to exclude spectral pixels in baseline fitting. Can be interpreted as line half-width. The value should be given in km/s. 
+        deg : int, optional
+            Degree of the polynomial used to adjust the baseline around the line. 
+        control_plot : bool, optional
+            If True, show the different stages of the baseline subtraction.
+
+        Returns
+        ----------
+        Spec 
+           The initial spectrum, subtracted from its baseline.
+        """
 
         dwvs = np.nanmean(np.diff(self.wvs))
 
@@ -177,6 +215,24 @@ class Spec:
         return Spec(self.wvs, spec_cont_sub, units=self.units)
 
     def line_integ(self, wv_line, profile=None, line_width=400, control_plot=False):
+        """Computes the integrated flux or surface brightness of a line.  
+
+        Parameters 
+        ----------
+        wv_line : float
+            Wavelength in vacuum and at rest of the emission line, in µm.
+        profile : str, optional
+            Type of line profile. If no profile is specified, integration is performed using a simpson method. If a profile is specified, it must be one of the following: 'gaus', 'voigt', 'lorentz' and 'moffat'. 
+        line_width : float, optional 
+            Full-width of the line. The value should be given in km/s.
+        control_plot : bool, optional
+            If True, show the different steps of the line integration.
+
+        Returns
+        ----------
+        float, float 
+            The first value corresponds to the flux or integrated surface brightness of the line, the second to the error on the first value. 
+        """
 
         if profile == 'gaus':
 
@@ -404,6 +460,22 @@ class Spec:
         return
 
     def line_velocity(self, wv_line, line_width=400, control_plot=False):
+        """Calculates the Doppler shift of an emission line using Gaussian profile fitting.
+
+        Parameters 
+        ----------
+        wv_line : float
+            Wavelength in vacuum and at rest of the emission line, in µm.
+        line_width : float, optional 
+            Full-width of the line. The value should be given in km/s.
+        control_plot : bool, optional
+            If True, show the line fitting.
+
+        Returns
+        ----------
+        float, float 
+            The first value corresponds to the Doppler shift of the line, in terms of radial velocity given in km/s, the second the error associated with the first value. 
+        """
 
         def gaussian(x, a, x0, sigma):
             return a * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
@@ -448,21 +520,76 @@ class Spec:
         return popt[1], np.sqrt(pcov[1][1])
 
     def copy(self):
+        """Copy a spectrum.
+
+        Parameters 
+        ----------
+
+        Returns
+        ----------
+        Spec
+            The initial spectrum copied 
+        """
+
         new_wvs = np.copy(self.wvs)
         new_values = np.copy(self.values)
         return Spec(new_wvs, new_values, units=self.units)
 
     # GETTER
     def get_wvs(self):
+        """Returns the wavelength axis of the spectrum, in µm.
+
+        Parameters 
+        ----------
+
+        Returns
+        ----------
+        list
+            Wavelength values of the spectrum, in µm.
+        """
         return self.wvs
+
     def get_values(self):
+        """Returns the flux or surface brightness values of the spectrum.
+
+        Parameters 
+        ----------
+
+        Returns
+        ----------
+        list
+            Y-axis (flux or surface brightness) values of the spectrum. 
+        """
         return self.values
+
     def get_units(self):
+        """Returns the units of the spectrum y-axis 
+
+        Parameters 
+        ----------
+
+        Returns
+        ----------
+        str
+            The units of the spectrum y-axis values. They can be flux or surface brightness. 
+        """
         return self.units
+
     def get_wvs_step(self):
+        """Returns the interval between two spectral pixels, in µm.
+
+        Parameters 
+        ----------
+
+        Returns
+        ----------
+        float
+            Increment value between each spectral pixel in the spectrum, in µm.
+        """
         return self.dwvs
 
 
+"""
 def sum(spec1, spec2, units=None, px_area=1):
 
     all_units = ['MJy/sr', 'Jy', 'erg s-1 cm-2 Hz-1', 'erg s-1 cm-2 um-1']
@@ -511,7 +638,7 @@ def sum(spec1, spec2, units=None, px_area=1):
     else:                       # Different wavelength grid
         print("The spectra do not have the same wavelength grid.")
 
-
+"""
 
 
 

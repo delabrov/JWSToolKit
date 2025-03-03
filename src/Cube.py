@@ -1,3 +1,7 @@
+"""
+Cube class, for manipulating JWST spectro-imaging data.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -12,14 +16,6 @@ from Spec import Spec
 
 c_sp = 299792458        # Speed of light (m/s)
 
-
-"""
-.info (Taille, Nom, Surf px, coords centre, instrum, wvs min/max/step, ID, filtre, units)
-.copy(Cube)
-.reduce(taille spatiale ou spectrale)
-.plot ?
-.mean_spectrum
-"""
 
 class Cube:
     def __init__(self, file_name):
@@ -277,7 +273,7 @@ class Cube:
         Parameters
         ----------
         wv_line : float
-            Wavelength in vacuum and at rest of the emission line, given in µm.
+            Wavelength in vacuum and at rest of the emission line, given in the same unit as the x-axis of the spectra.
         continuum_range : float, optional
             Spectral half-interval used to adjust the spectrum continuum, given in km/s. The interval is centered on the wavelength of the line.
         line_width : float, optional

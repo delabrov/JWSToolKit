@@ -1,3 +1,7 @@
+"""
+File showing how to use the module
+"""
+
 from Cube import Cube
 from Spec import Spec
 import numpy as np
