@@ -1,5 +1,36 @@
 """
 Cube class, for manipulating JWST spectro-imaging data.
+
+This class is used to create and manage Cube objects. JWST spectro-imaging data consists of a series of images, each associated with a specific wavelength. The array of values is then in the form of a 3D list. The first dimension is a spectral dimension, defaulting to micron wavelengths. The wavelength range is specific to the instrument's grism and/or filter. The other two dimensions are spatial dimensions, forming images. 
+
+The Cube object has two headers containing all data information. The structure and information of the headers are identical to those of the files output by the reduction pipeline. The first header is called 'primary' and contains all general information about the observations (PI, instrument, date, time and duration of observations, configuration, etc.). The second header provides more information about the data, such as 3D array size, 3-axis sampling and units. A summary of the information can be displayed using the .info() method.
+
+The values (in surface brightness if units are the default) of the 3D array are stored in the .data attribute. The uncertainties at each pixel of the cube are also stored in an .errs attribute, an array of the same size as the data. 
+
+When creating a Cube object, you must provide the file name in .fits format. 
+
+Parameters
+----------
+file_name : str
+    The name of the file in .fits format. For JWST spectro-imaging data, the default name contains the suffix “_s3d”.
+
+Attributes
+----------
+    primary_header : 'astropy.io.fits.Header'
+        The FITS primary header, using astropy.io tools.
+    data_header : 'astropy.io.fits.Header'
+        The FITS header associated with the data, using astropy.io tools.
+    data : array_like 
+        Data stored as a cube (3D array). The first dimension is the spectral dimension, the other two dimensions are the spatial dimensions. 
+    errs : array_like
+        Uncertainties associated with 'science' data stored in the .data attribute.
+    size : array_like
+        The number of points in each dimension. The first value gives the number of spectral pixels, the second the number of x-axis pixels and the third the number of y-axis pixels. 
+    px_area : float
+        Area of a spatial pixel in images. The value is given in steradian.
+    units : str
+        The unit of values stored in the .data table. Default values are surface brightness in MJy/sr. 
+
 """
 
 import numpy as np
@@ -29,10 +60,10 @@ class Cube:
             primary_hdu = hdul[0]
             sci_hdu = hdul[1]
             err_hdu = hdul[2]
-            dq_hdu = hdul[3]
-            varPoisson_hdu = hdul[4]
-            varRnoise_hdu = hdul[5]
-            asdf_hdu = hdul[6]
+            #dq_hdu = hdul[3]
+            #varPoisson_hdu = hdul[4]
+            #varRnoise_hdu = hdul[5]
+            #asdf_hdu = hdul[6]
 
             self.primary_header = primary_hdu.header                # Primary header
             self.data_header = sci_hdu.header                       # Data header
@@ -54,7 +85,7 @@ class Cube:
 
         Returns
         ----------
-        list
+        array_like
             The wavelength grid
         """
 
@@ -153,7 +184,7 @@ class Cube:
             The character string specifies the units of the output spectrum.
         Returns
         ----------
-        list
+        array_like
             If err is False, the routine returns flux values of the summed spectrum
             If err is True, the routine returns 2 sub-lists. The first containing flux values of the summed spectrum
             and the second containing erros associated with flux values.
@@ -211,7 +242,7 @@ class Cube:
 
         Returns
         ----------
-        list
+        array_like
              If the coordinates of a single point have been given, the list contains two elements being the R.A., Dec.
              coordinates converted into degrees. If the coordinates are those of several points, the list contains two
              sub-lists containing respectively the R.A., Dec. positions of the different points.
@@ -246,7 +277,7 @@ class Cube:
 
         Returns
         ----------
-        list
+        array_like
              If the coordinates of a single point have been given, the list contains two elements being the (x,y)
              coordinates converted into pixel coordinates. If the coordinates are those of several points, the list
              contains two sub-lists containing respectively the x and y positions of the different points.
@@ -287,7 +318,7 @@ class Cube:
 
         Returns
         ----------
-        list
+        array_like
             The integrated emission map, with the same dimensions as the spatial dimensions of the initial data cube. 
         """
 
@@ -355,11 +386,20 @@ class Cube:
 
 
 
+"""
+- get_band_image (à renommer)
+    Crée une image à partir d'un nom de filtre d'un instrument d'imagerie (Type MIRI ou NIRCam)
+- getters pour les différents sub-list du fichier (dq, ...)
+- convolve 
+    Convolution Gaussienne en spécifiant une FWHM à une longueur d'onde donnée
+- rotate 
+    Tourne tout le cube de données à partir d'un angle 
+"""
 
 
 
 
-
+"""
     def rotate(self, angle):
 
         new_cube = np.full(self.size, np.nan)
@@ -382,7 +422,7 @@ class Cube:
             new_cube[k,:,:] = ch_map_rotated
 
         return new_cube
-
+"""
 
 
 

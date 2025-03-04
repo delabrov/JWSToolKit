@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'JWSTools'
+project = 'JWSToolKit'
 copyright = '2025, Valentin Delabrosse'
 author = 'Valentin Delabrosse'
 release = '1.0'
@@ -29,5 +29,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'#'furo'
+html_theme = 'furo' #'sphinx_rtd_theme'
 html_static_path = ['_static']
+
+
+html_theme_options = {
+    "light_logo" : 'JWSToolKit_logo.png', 
+    "dark_logo" : 'JWSToolKit_logo.png'
+}
+

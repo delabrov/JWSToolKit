@@ -1,3 +1,22 @@
+"""
+
+
+Parameters
+----------
+wvs : array_like
+    The x-axis of the spectrum. The axis corresponds to wavelengths and values must be in µm. This is the default unit for JWST data.
+values : array_like 
+    The y axis of the spectrum. By default in JWST data, the values in each spaxel are surface brightness, given in MJy/sr. It is possible to give other units, in flux or surface brightness. 
+units : str, optional
+    Unit of the y axis of the spectrum. Default values in JWST data are surface brightness in MJy/sr. 
+
+Attributes
+----------
+
+
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import integrate
@@ -18,7 +37,7 @@ class Spec:
             self.dwvs = np.nanmean(np.diff(self.wvs))   # Wavelength step size (µm)
 
     def convert(self, units, px_area=1):
-        """Convert spectrum values into another unit
+        """Convert spectrum values into another unit.
 
         Parameters
         ----------
@@ -113,9 +132,9 @@ class Spec:
         Parameters 
         ----------
         min : float 
-            Value of the lower limit of the cut spectrum interval. If no unit is specified, or the specified unit is 'wav', then the value is a wavelength, in µm.
+            Value of the lower limit of the cut spectrum interval. If no unit is specified or the specified unit is 'wav', then the value is a wavelength in µm.
         max : float
-            Value of the upper limit of the cut spectrum interval. If no unit is specified, or the specified unit is 'wav', then the value is a wavelength, in µm. 
+            Value of the upper limit of the cut spectrum interval. If no unit is specified or the specified unit is 'wav', then the value is a wavelength in µm. 
         units : str, optional
             Unit of the x-axis of the spectrum. If the unit is 'wav', then the x-axis values are wavelengths, and the interval limits must be given in wavelengths. If the unit is 'vel', then the values of the x-axis are radial velocities, and the limits of the interval must be given in km/s. The reference wavelength must then be specified to convert wavelengths into radial velocities (via the Doppler shift relation).
         wv_ref : Optional
@@ -124,8 +143,7 @@ class Spec:
         Returns
         ----------
         Spec 
-            A Spec object cut by considering the limits of the interval given as input parameters 
-
+            A Spec object cut by considering the limits of the interval given as input parameters.
         """
 
         all_units = ['wav', 'vel']
@@ -528,65 +546,25 @@ class Spec:
         Returns
         ----------
         Spec
-            The initial spectrum copied 
+            The initial spectrum copied.
         """
 
         new_wvs = np.copy(self.wvs)
         new_values = np.copy(self.values)
         return Spec(new_wvs, new_values, units=self.units)
 
-    # GETTER
-    def get_wvs(self):
-        """Returns the wavelength axis of the spectrum, in µm.
 
-        Parameters 
-        ----------
 
-        Returns
-        ----------
-        list
-            Wavelength values of the spectrum, in µm.
-        """
-        return self.wvs
 
-    def get_values(self):
-        """Returns the flux or surface brightness values of the spectrum.
+"""
+- convolve : 
+    Convolution du spectre avec un profil Gaussien, changer la résolution spectral
+- fwhm : 
+    Retourne la largeur d'une raie d'émission
+- plot : 
+    Affiche le spectre
+"""
 
-        Parameters 
-        ----------
-
-        Returns
-        ----------
-        list
-            Y-axis (flux or surface brightness) values of the spectrum. 
-        """
-        return self.values
-
-    def get_units(self):
-        """Returns the units of the spectrum y-axis 
-
-        Parameters 
-        ----------
-
-        Returns
-        ----------
-        str
-            The units of the spectrum y-axis values. They can be flux or surface brightness. 
-        """
-        return self.units
-
-    def get_wvs_step(self):
-        """Returns the interval between two spectral pixels, in µm.
-
-        Parameters 
-        ----------
-
-        Returns
-        ----------
-        float
-            Increment value between each spectral pixel in the spectrum, in µm.
-        """
-        return self.dwvs
 
 
 """
@@ -639,10 +617,3 @@ def sum(spec1, spec2, units=None, px_area=1):
         print("The spectra do not have the same wavelength grid.")
 
 """
-
-
-
-# Sub scat
-# chgt resolution
-# somme 2 spectres
-# division 2 spectres
