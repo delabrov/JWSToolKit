@@ -1,7 +1,7 @@
-Spec module
-===========
+Cube Object
+==========
 
-.. automodule:: Spec
+.. automodule:: Cube
    :members:
    :show-inheritance:
    :undoc-members:

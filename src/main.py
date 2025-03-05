@@ -19,6 +19,8 @@ int_map = cube.line_emission_map(wv_line = 1.64355271, map_units='erg s-1 cm-2 s
 
 
 
+# !!! Mettre toutes les méthodes sous le format EstUneFonction !!!
+# !!! Ajouter les annotations de type dans les méthodes !!!
 
 
 

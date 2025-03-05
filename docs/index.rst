@@ -6,8 +6,20 @@
 JWSToolKit documentation
 ======================
 
+Python package for handling JWST data
+! Still in development !
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   modules 
+   installation
+   getting_started
+   objects 
+   authors_and_credits
+
+
+.. include:: installation.rst
+
+
+.. include:: authors_and_credits.rst
