@@ -108,6 +108,8 @@ class Cube:
             elif units == all_units[2]: return wgrid * 1e3
 
     def info(self):
+        """Prints information stored in headers associated with the data cube. 
+        """
 
         dither_bool = False
         if self.primary_header['NUMDTHPT'] > 1:
