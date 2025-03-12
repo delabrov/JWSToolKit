@@ -6,6 +6,8 @@ from matplotlib.colors import LogNorm
 
 file = "/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644_nirspec_g140h-f100lp_s3d.fits"
 cube = Cube(file)
+
+
 wvs = cube.get_wvs()
 
 cube.info()
