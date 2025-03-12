@@ -43,7 +43,7 @@ from scipy import ndimage
 from tqdm import tqdm
 import warnings
 
-from Spec import Spec
+from .Spec import Spec
 
 c_sp = 299792458        # Speed of light (m/s)
 

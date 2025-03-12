@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 JWSToolKit documentation
-======================
+==========================
 
 .. warning::
    The package is still under development, although many of the features are already functional. Documentation is also still under production. 

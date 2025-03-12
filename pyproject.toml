@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "JWSToolKit"
+version = "1.0.4"
+description = "Un outil pour analyser les données JWST"
+readme = "README.md"
+authors = [{ name = "Ton Nom", email = "tonemail@example.com" }]
+license = { file = "LICENSE" }
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "astropy"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}  # ✅ Indique que le code source est dans src
+
+[tool.setuptools.packages.find]
+where = ["src"]  # ✅ Cherche les packages dans src

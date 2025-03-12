@@ -9,8 +9,7 @@ The package is divided into several modules corresponding to the different Class
 
 .. code-block:: python
 
-    from Cube import Cube 
-    from Spec import Spec
+    from JWSToolKit import Cube, Spec
 
 Open a JWST 'data cube' file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -32,7 +31,7 @@ This method reads the two main headers of JWST observations: the 'primary header
 
 .. code-block:: console
 
-        __________ DATA CUBE INFORMATION __________
+    __________ DATA CUBE INFORMATION __________
     Data file name:DataCube_s3d.fits
     Program PI: Dougados, Catherine, for the project: A cornerstone study of the jet/outflow connexion: the remarkable DG Tau B system
     Program ID: 01644
