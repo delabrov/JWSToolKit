@@ -19,6 +19,11 @@ Before installing JWSToolKit, you should have the following dependencies install
 * tqdm - Progress bar in the terminal
 * photutils - To handle telescope observations
 
+.. warnings:: 
+    In particular, pay close attention to the photutils package. 
+    To run JWSToolKit routines correctly, you need to have the latest version of photutils 
+    installed on your machine, as well as a version of Python later than 3.11.
+
 
 Installation with *pip*
 ^^^^^^^^^^^^^^^^^^^^^^^^^
