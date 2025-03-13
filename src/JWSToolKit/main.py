@@ -1,5 +1,5 @@
-from .Cube import Cube
-from .Spec import Spec
+from JWSToolKit.Cube import Cube
+from JWSToolKit.Spec import Spec
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm

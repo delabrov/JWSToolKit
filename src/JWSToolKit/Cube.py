@@ -1,18 +1,38 @@
 """
 Cube class, for manipulating JWST spectro-imaging data.
 
-This class is used to create and manage Cube objects. JWST spectro-imaging data consists of a series of images, each associated with a specific wavelength. The array of values is then in the form of a 3D list. The first dimension is a spectral dimension, defaulting to micron wavelengths. The wavelength range is specific to the instrument's grism and/or filter. The other two dimensions are spatial dimensions, forming images. 
+This class is used to create and manage Cube objects. 
+JWST spectro-imaging data consists of a series of images, 
+each associated with a specific wavelength. 
+The array of values is then in the form of a 3D list. 
+The first dimension is a spectral dimension, defaulting to 
+micron wavelengths. 
+The wavelength range is specific to the instrument's grism 
+and/or filter. The other two dimensions are spatial dimensions, 
+forming images. 
 
-The Cube object has two headers containing all data information. The structure and information of the headers are identical to those of the files output by the reduction pipeline. The first header is called 'primary' and contains all general information about the observations (PI, instrument, date, time and duration of observations, configuration, etc.). The second header provides more information about the data, such as 3D array size, 3-axis sampling and units. A summary of the information can be displayed using the .info() method.
+The Cube object has two headers containing all data information. 
+The structure and information of the headers are identical to 
+those of the files output by the reduction pipeline. 
+The first header is called 'primary' and contains all general 
+information about the observations (PI, instrument, 
+date, time and duration of observations, configuration, etc.).
+The second header provides more information about 
+the data, such as 3D array size, 3-axis sampling and units. 
+A summary of the information can be displayed using the .info() method.
 
-The values (in surface brightness if units are the default) of the 3D array are stored in the .data attribute. The uncertainties at each pixel of the cube are also stored in an .errs attribute, an array of the same size as the data. 
+The values (in surface brightness if units are the default) of 
+the 3D array are stored in the .data attribute. 
+The uncertainties at each pixel of the cube are also stored in 
+an .errs attribute, an array of the same size as the data. 
 
 When creating a Cube object, you must provide the file name in .fits format. 
 
 Parameters
 ----------
 file_name : str
-    The name of the file in .fits format. For JWST spectro-imaging data, the default name contains the suffix “_s3d”.
+    The name of the file in .fits format. For JWST spectro-imaging data, 
+    the default name contains the suffix “_s3d”.
 
 Attributes
 ----------
@@ -21,15 +41,19 @@ Attributes
     data_header : 'astropy.io.fits.Header'
         The FITS header associated with the data, using astropy.io tools.
     data : array_like 
-        Data stored as a cube (3D array). The first dimension is the spectral dimension, the other two dimensions are the spatial dimensions. 
+        Data stored as a cube (3D array). The first dimension is the 
+        spectral dimension, the other two dimensions are the spatial dimensions. 
     errs : array_like
         Uncertainties associated with 'science' data stored in the .data attribute.
     size : array_like
-        The number of points in each dimension. The first value gives the number of spectral pixels, the second the number of x-axis pixels and the third the number of y-axis pixels. 
+        The number of points in each dimension. The first value gives 
+        the number of spectral pixels, the second the number of x-axis pixels 
+        and the third the number of y-axis pixels. 
     px_area : float
         Area of a spatial pixel in images. The value is given in steradian.
     units : str
-        The unit of values stored in the .data table. Default values are surface brightness in MJy/sr. 
+        The unit of values stored in the .data table. Default values are 
+        surface brightness in MJy/sr. 
 
 """
 
@@ -39,12 +63,17 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
 from astropy.wcs import WCS
 from photutils import aperture_photometry, ApertureStats
-from photutils.aperture.circle import CircularAperture
+
+try:
+    from photutils.aperture.circle import CircularAperture
+except: ImportError:
+    from photutils import CircularAperture
+    
 from scipy import ndimage
 from tqdm import tqdm
 import warnings
 
-from .Spec import Spec
+from JWSToolKit.Spec import Spec
 
 c_sp = 299792458        # Speed of light (m/s)
 
