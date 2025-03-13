@@ -62,12 +62,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
 from astropy.wcs import WCS
-from photutils import aperture_photometry, ApertureStats
 
 try:
     from photutils.aperture.circle import CircularAperture
+    from photutils.aperture import aperture_photometry, ApertureStats
 except ImportError:
-    from photutils import CircularAperture
+    from photutils import CircularAperture, aperture_photometry, ApertureStats
     
 from scipy import ndimage
 from tqdm import tqdm
