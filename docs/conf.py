@@ -36,6 +36,6 @@ html_static_path = ['_static']
 html_theme_options = {
     "light_logo" : 'JWSToolKit_logo_light_fullsize.png', 
     "dark_logo" : 'JWSToolKit_logo_dark_fullsize.png',
-    "sidebar_hide_name": True  
+    "sidebar_hide_name": True,
 }
 

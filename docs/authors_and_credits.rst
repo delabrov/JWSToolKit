@@ -9,3 +9,9 @@ Useful links
 
 - `JWSToolKit GitHub project <https://github.com/delabrov/JWSToolKit>`_
 - `JWST user documentation <https://jwst-docs.stsci.edu/#gsc.tab=0>`_
+
+How to cite this work? 
+-----------------------
+
+This project has no dedicated article. To cite this package, cite *Delabrosse et al. 2024*. 
+The package enabled us to generate the images and spectra presented in the article and to help analyze the observations. 
