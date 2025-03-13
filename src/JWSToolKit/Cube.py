@@ -354,7 +354,7 @@ class Cube:
             The integrated emission map, with the same dimensions as the spatial dimensions of the initial data cube. 
         """
 
-        all_map_units = ['MJy/sr um', 'erg s-1 cm-2 sr-1']
+        all_map_units = ['MJy um sr-1', 'erg s-1 cm-2 sr-1']
         wvs_units = 'um'
 
         if not isinstance(map_units, str) or map_units not in all_map_units:

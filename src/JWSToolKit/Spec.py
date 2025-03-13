@@ -1,26 +1,41 @@
 """
-The Spec object stores information about spectra that can be extracted from JWST data cubes. The spectrum is in the form of two 1D lists containing wavelength values in µm and surface brightness (flux per unit 'angular area') or flux values. By default, JWST data are given in MJy/sr, i.e. surface brightness. However, other units can be specified for the y-axis of the spectrum. 
+The Spec object stores information about spectra that can be extracted 
+from JWST data cubes. The spectrum is in the form of two 1D lists containing 
+wavelength values in µm and surface brightness (flux per unit 'angular area') 
+or flux values. By default, JWST data are given in MJy/sr, i.e. surface 
+brightness. However, other units can be specified for the y-axis of the spectrum. 
 
-The three preceding elements: wavelength axis, value axis and units are attributes of the Spec object. The increment value on the wavelength axis is the object's fourth argument. 
+The three preceding elements: wavelength axis, value axis and units are 
+attributes of the Spec object. The increment value on the wavelength axis 
+is the object's fourth argument. 
 
 
 Parameters
 ----------
 wvs : array_like
-    The x-axis of the spectrum. The axis corresponds to wavelengths in µm. This is the default unit for JWST data.
+    The x-axis of the spectrum. The axis corresponds to wavelengths in 
+    µm. This is the default unit for JWST data.
 values : array_like 
-    The y axis of the spectrum. By default in JWST data, the values in each spaxel are surface brightness, given in MJy/sr. It is possible to give other units, in flux or surface brightness. The number of points on the y axis must be identical to the number of points on the wavelength axis. 
+    The y axis of the spectrum. By default in JWST data, the values in 
+    each spaxel are surface brightness, given in MJy/sr. It is possible 
+    to give other units, in flux or surface brightness. The number of 
+    points on the y axis must be identical to the number of points on the 
+    wavelength axis. 
 units : str, optional
-    Unit of the y axis of the spectrum. Default values in JWST data are surface brightness in MJy/sr. 
+    Unit of the y axis of the spectrum. Default values in JWST data are 
+    surface brightness in MJy/sr. 
 
 Attributes
 ----------
 wvs : array_like 
     The wavelength values of the spectrum. 
 values : array_like 
-    The brightness surface or flux values of the spectrum. The unit must match that of the 'units' argument.
+    The brightness surface or flux values of the spectrum. 
+    The unit must match that of the 'units' argument.
 units : str
-    The unit of the y axis values of the spectrum. Possible units are : 'MJy/sr', 'Jy', 'erg s-1 cm-2 Hz-1', 'erg s-1 cm-2 um-1', 'erg s-1 cm-2 um-1 sr-1'.
+    The unit of the y axis values of the spectrum. Possible units 
+    are: 'MJy/sr', 'Jy', 'erg s-1 cm-2 Hz-1', 'erg s-1 cm-2 um-1', 
+    'erg s-1 cm-2 um-1 sr-1'.
 dwvs : float
     Interval between two points on the wavelength axis, in µm.
 """
@@ -51,9 +66,12 @@ class Spec:
         Parameters
         ----------
         units : str
-            The unit of the spectrum after conversion. Possible units are : MJy/sr, Jy, erg s-1 cm-2 Hz-1, erg s-1 cm-2 um-1, erg s-1 cm-2 um-1 sr-1.
+            The unit of the spectrum after conversion. Possible units are : 
+            MJy/sr, Jy, erg s-1 cm-2 Hz-1, erg s-1 cm-2 um-1, erg s-1 cm-2 um-1 sr-1.
         px_area : float, optional
-            Spatial area over which the spectrum was extracted. Used to convert surface brightness to flux density. The value must be given in steradian.
+            Spatial area over which the spectrum was extracted. Used to 
+            convert surface brightness to flux density. The value must 
+            be given in steradian.
             
         Returns
         ----------
@@ -317,7 +335,7 @@ class Spec:
             wvs_new = np.linspace(self.wvs[0], self.wvs[-1], np.shape(self.wvs)[0]*4)
             line_fit = voigt(wvs_new, *popt)
 
-            flux_int = integrate.simps(line_fit, wvs_new)
+            flux_int = integrate.simpson(line_fit, wvs_new)
 
             # Error on flux value
             err_flux_int = 0
@@ -370,7 +388,7 @@ class Spec:
             line_fit = lorentz(wvs_new, *popt)
 
             # Line integration
-            flux_int = integrate.simps(line_fit, wvs_new)
+            flux_int = integrate.simpson(line_fit, wvs_new)
 
             # Error on flux value
             err_flux_int = 0
@@ -421,7 +439,7 @@ class Spec:
             line_fit = moffat(wvs_new, *popt)
 
             # Line integration
-            flux_int = integrate.simps(line_fit, wvs_new)
+            flux_int = integrate.simpson(line_fit, wvs_new)
 
             # Error on flux value
             err_flux_int = 0
@@ -463,7 +481,7 @@ class Spec:
             spec_line = self.values[idxs_line]
 
             # Line integration
-            flux_int = integrate.simps(spec_line, wvs_line)
+            flux_int = integrate.simpson(spec_line, wvs_line)
 
             # Error on flux value
             err_flux_int = 0

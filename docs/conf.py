@@ -9,7 +9,7 @@
 project = 'JWSToolKit'
 copyright = '2025, Valentin Delabrosse'
 author = 'Valentin Delabrosse'
-release = '1.0.7'
+release = '1.0.8'
 
 import os
 import sys
