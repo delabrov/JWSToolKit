@@ -12,7 +12,9 @@ license = { file = "LICENSE" }
 dependencies = [
     "numpy",
     "matplotlib",
-    "astropy"
+    "astropy", 
+    "tqdm",
+    "scipy"
 ]
 
 [tool.setuptools]

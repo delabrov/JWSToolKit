@@ -1,0 +1,28 @@
+package:
+  name: jwstoolkit
+  version: "1.0.4"
+
+source:
+  git_url: https://github.com/delabrov/JWSToolKit.git
+  git_tag: v1.0.4  # Remplace par la version de ton package
+
+build:
+  noarch: python
+  script: pip install .  # Utilise pip pour installer le package
+  number: 0
+
+requirements:
+  build:
+    - python >=3.7
+    - pip
+  run:
+    - python >=3.7
+    - numpy
+    - matplotlib
+    - astropy
+    - scipy
+
+about:
+  home: "https://github.com/delabrov/JWSToolKit"
+  license: "MIT"
+  summary: "A python package for handling JWST observations"

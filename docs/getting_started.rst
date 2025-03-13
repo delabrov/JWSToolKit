@@ -71,7 +71,7 @@ The extract_spec_circ_aperture(*params*) method is used to retrieve a 1D vector 
 .. code-block:: python
 
     radius      = 5         # unit: px
-    position    = [25, 29]  # unit : px
+    position    = [25, 29]  # unit: px
 
     # This function extracts the integrated spectrum
     spectrum_values = cube.extract_spec_circ_aperture(radius, position, units='Jy')
@@ -82,4 +82,48 @@ The extract_spec_circ_aperture(*params*) method is used to retrieve a 1D vector 
     # Building the Spec object
     spectrum = Spec(wvs_values, spectrum_values, units='Jy')
 
+
+cube.extract_spec_circ_aperture() calculates the summed spectrum in a circular aperture, specifying a radius and position 
+(it is also possible to choose the unit of the spectrum values). The method returns a 1D list containing the spectrum values. 
+By retrieving the points on the wavelength axis (using the get_wvs() method), you can construct a *Spec* object. That's what the next one does. 
+To construct a Spec object, the input parameters must be the wavelengths and associated spectrum values. The units of the spectrum points must also be given. 
+
+
+Getting help 
+^^^^^^^^^^^^^
+
+To display the documentation for a class or method, use Python's native features: 
+
+.. code-block:: python
+
+    help(Cube)                                  # Displays Cube class documentation
+
+    print(Cube.line_emission_map.__doc__)       # Displays documentation for the line_emission_map() method 
+
+
+For example, the second line prints in the terminal this: 
+
+.. code-block:: console
+
+    Builds the integrated emission map of a line at a given wavelength
+
+        Parameters
+        ----------
+        wv_line : float
+            Wavelength in vacuum and at rest of the emission line, given in the same unit as the x-axis of the spectra.
+        continuum_range : float, optional
+            Spectral half-interval used to adjust the spectrum continuum, given in km/s. The interval is centered on the wavelength of the line.
+        line_width : float, optional
+            Spectral width of the emission line, given in km/s.
+        continuum_degree : int, optional
+            Polynomial order used to fit the continuum around the line.
+        map_units : str, optional
+            Map pixel units.
+        control_plot : bool, optional
+            If True, show the integrated emission map.
+
+        Returns
+        ----------
+        array_like
+            The integrated emission map, with the same dimensions as the spatial dimensions of the initial data cube. 
 
