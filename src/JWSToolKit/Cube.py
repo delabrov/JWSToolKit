@@ -66,7 +66,7 @@ from photutils import aperture_photometry, ApertureStats
 
 try:
     from photutils.aperture.circle import CircularAperture
-except: ImportError:
+except ImportError:
     from photutils import CircularAperture
     
 from scipy import ndimage

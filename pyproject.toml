@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "JWSToolKit"
-version = "1.0.5"
+version = "1.0.6"
 description = "A python package for handling JWST observations"
 readme = "README.md"
 authors = [{ name = "Valentin Delabrosse", email = "valentin.delabrosse@univ-grenoble-alpes.fr" }]

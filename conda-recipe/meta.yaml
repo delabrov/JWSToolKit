@@ -1,10 +1,10 @@
 package:
   name: jwstoolkit
-  version: "1.0.5"
+  version: "1.0.6"
 
 source:
   git_url: https://github.com/delabrov/JWSToolKit.git
-  git_tag: v1.0.5  # Remplace par la version de ton package
+  git_tag: v1.0.6  # Remplace par la version de ton package
 
 build:
   noarch: python
