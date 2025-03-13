@@ -1,6 +1,5 @@
 ![Logo GitHub](https://github.com/delabrov/JWSToolKit/blob/main/docs/_static/JWSToolKit_logo_dark_fullsize.png)
 
-# JWSTools
 A python package for handling JWST observations 
 
 ## Useful links
