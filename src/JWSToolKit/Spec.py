@@ -47,10 +47,10 @@ from scipy import integrate
 from scipy.optimize import curve_fit
 from scipy.special import wofz
 
-c_sp = 299792458            # Speed of light (m/s)
+C_SP = 299792458            # Speed of light (m/s)
 
 class Spec:
-    def __init__(self, wvs, values, units='MJy/sr'):
+    def __init__(self, wvs : list[float], values: list[float], units: str = 'MJy/sr'):
 
         if wvs.shape[0] != values.shape[0]:
             raise AssertionError('The number of wavelength elements must be identical to the number of spectral values.')
@@ -60,7 +60,7 @@ class Spec:
             self.units = units                          # Spectrum values units
             self.dwvs = np.nanmean(np.diff(self.wvs))   # Wavelength step size (µm)
 
-    def convert(self, units, px_area=1):
+    def convert(self, units: str, px_area: float = 1):
         """Convert spectrum values into another unit.
 
         Parameters
@@ -102,12 +102,12 @@ class Spec:
                 elif units == all_units[3]:             # -> erg s-1 cm-2 micron-1              ! Flux Density F_lbd !
                     new_values *= 1e6 * px_area
                     new_values *= 1e-23
-                    new_values *= (c_sp*1e6 / (self.wvs)**2)
+                    new_values *= (C_SP*1e6 / (self.wvs)**2)
 
                 elif units == all_units[4]:             # -> erg s-1 cm-2 micron-1 sr-1         ! Surface Brightness !
                     new_values *= 1e6
                     new_values *= 1e-23
-                    new_values *= (c_sp*1e6 / (self.wvs)**2)
+                    new_values *= (C_SP*1e6 / (self.wvs)**2)
 
             elif self.units == all_units[1]:        # Jy                                        ! Flux Density F_nu !
                 new_values = np.copy(self.values)
@@ -120,7 +120,7 @@ class Spec:
 
                 elif units == all_units[3]:         # -> erg s-1 cm-2 micron-1                  ! Flux Density F_lbd !
                     new_values *= 1e-23
-                    new_values *= (c_sp * 1e6 / (self.wvs) ** 2)
+                    new_values *= (C_SP * 1e6 / (self.wvs) ** 2)
 
             elif self.units == all_units[2]:        # erg s-1 cm-2 Hz-1                         ! Flux Density F_nu !
                 new_values = np.copy(self.values)
@@ -132,40 +132,48 @@ class Spec:
                     new_values /= 1e-23
 
                 elif units == all_units[3]:         # -> erg s-1 cm-2 micron-1                  ! Flux Density F_lbd !
-                    new_values *= (c_sp * 1e6 / (self.wvs) ** 2)
+                    new_values *= (C_SP * 1e6 / (self.wvs) ** 2)
 
             elif self.units == all_units[3]:        # erg s-1 cm-2 micron-1                     ! Flux Density F_lbd !
                 new_values = np.copy(self.values)
 
                 if units == all_units[0]:           # -> MJy/sr                                 ! Surface Brightness !
-                    new_values /= (c_sp * 1e6 / (self.wvs) ** 2)
+                    new_values /= (C_SP * 1e6 / (self.wvs) ** 2)
                     new_values /= (1e-23 * 1e6 * px_area)
 
                 elif units == all_units[1]:         # -> Jy                                     ! Flux Density F_nu !
-                    new_values /= (c_sp * 1e6 / (self.wvs) ** 2)
+                    new_values /= (C_SP * 1e6 / (self.wvs) ** 2)
                     new_values /= 1e-23
 
                 elif units == all_units[2]:         # -> erg s-1 cm-2 Hz-1                      ! Flux Density F_nu !
-                    new_values /= (c_sp * 1e6 / (self.wvs) ** 2)
+                    new_values /= (C_SP * 1e6 / (self.wvs) ** 2)
 
             self.values = new_values
             self.units  = units
 
         return
 
-    def cut(self, min, max, units='wav', wv_ref=None):
+    def cut(self, min: float, max: float, units: str = 'wav', wv_ref=None):
         """Extract a part of the spectrum using limits of the requiered interval.
 
         Parameters 
         ----------
         min : float 
-            Value of the lower limit of the cut spectrum interval. If no unit is specified or the specified unit is 'wav', then the value is a wavelength in µm.
+            Value of the lower limit of the cut spectrum interval. If no unit is specified 
+            or the specified unit is 'wav', then the value is a wavelength in µm.
         max : float
-            Value of the upper limit of the cut spectrum interval. If no unit is specified or the specified unit is 'wav', then the value is a wavelength in µm. 
+            Value of the upper limit of the cut spectrum interval. If no unit is specified 
+            or the specified unit is 'wav', then the value is a wavelength in µm. 
         units : str, optional
-            Unit of the x-axis of the spectrum. If the unit is 'wav', then the x-axis values are wavelengths, and the interval limits must be given in wavelengths. If the unit is 'vel', then the values of the x-axis are radial velocities, and the limits of the interval must be given in km/s. The reference wavelength must then be specified to convert wavelengths into radial velocities (via the Doppler shift relation).
+            Unit of the x-axis of the spectrum. If the unit is 'wav', then the x-axis 
+            values are wavelengths, and the interval limits must be given in wavelengths. 
+            If the unit is 'vel', then the values of the x-axis are radial velocities, 
+            and the limits of the interval must be given in km/s. The reference wavelength 
+            must then be specified to convert wavelengths into radial velocities (via the 
+            Doppler shift relation).
         wv_ref : Optional
-            In the case of the 'vel' unit, a wavelength reference value must be given for conversion to radial velocity (via the Doppler shift relation), in µm.
+            In the case of the 'vel' unit, a wavelength reference value must be given 
+            for conversion to radial velocity (via the Doppler shift relation), in µm.
 
         Returns
         ----------
@@ -184,7 +192,7 @@ class Spec:
             elif not isinstance(wv_ref, (int, float)) or wv_ref <= 0:
                 raise AssertionError("The reference wavelength is invalid. It must be an integer float and given in km/s.")
             else:
-                rvs = (c_sp * (self.wvs - wv_ref) / wv_ref) / 1000  # km/s
+                rvs = (C_SP * (self.wvs - wv_ref) / wv_ref) / 1000  # km/s
                 idxs_cut = np.where(np.logical_and(rvs >= min, rvs <= max))
                 wvs_cut = self.wvs[idxs_cut]
                 values_cut = self.values[idxs_cut]
@@ -199,7 +207,7 @@ class Spec:
 
         return spec_cut
 
-    def sub_baseline(self, wv_line, mask_rv=200, deg=1, control_plot=False):
+    def sub_baseline(self, wv_line: float, mask_rv: float = 200., deg: int = 1, control_plot: bool = False):
         """Subtracts a baseline by fitting a polynomial around an emission line. 
 
         Parameters 
@@ -207,7 +215,9 @@ class Spec:
         wv_line : float
              Wavelength in vacuum and at rest of the emission line, in µm.
         mask_rv : float, optional
-            Half-width of the interval used to exclude spectral pixels in baseline fitting. Can be interpreted as line half-width. The value should be given in km/s. 
+            Half-width of the interval used to exclude spectral pixels in baseline 
+            fitting. Can be interpreted as line half-width. The value should be 
+            given in km/s. 
         deg : int, optional
             Degree of the polynomial used to adjust the baseline around the line. 
         control_plot : bool, optional
@@ -221,7 +231,7 @@ class Spec:
 
         dwvs = np.nanmean(np.diff(self.wvs))
 
-        rvs = (c_sp * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+        rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
 
         idx_max = np.where(self.values == np.nanmax(self.values))
         v_max = rvs[idx_max]
@@ -255,11 +265,12 @@ class Spec:
             ax.legend()
 
             fig.tight_layout()
+            #fig.savefig('baseline_subtraction.png', dpi=300)
             plt.show()
 
         return Spec(self.wvs, spec_cont_sub, units=self.units)
 
-    def line_integ(self, wv_line, profile=None, line_width=400, control_plot=False):
+    def line_integ(self, wv_line: float, profile=None, line_width: float = 400., control_plot: bool = False):
         """Computes the integrated flux or surface brightness of a line.  
 
         Parameters 
@@ -267,7 +278,10 @@ class Spec:
         wv_line : float
             Wavelength in vacuum and at rest of the emission line, in µm.
         profile : str, optional
-            Type of line profile. If no profile is specified, integration is performed using a simpson method. If a profile is specified, it must be one of the following: 'gaus', 'voigt', 'lorentz' and 'moffat'. 
+            Type of line profile. If no profile is specified, integration is 
+            performed using a simpson method. If a profile is specified, 
+            it must be one of the following: 'gaus', 'voigt', 'lorentz' 
+            and 'moffat'. 
         line_width : float, optional 
             Full-width of the line. The value should be given in km/s.
         control_plot : bool, optional
@@ -276,7 +290,8 @@ class Spec:
         Returns
         ----------
         float, float 
-            The first value corresponds to the flux or integrated surface brightness of the line, the second to the error on the first value. 
+            The first value corresponds to the flux or integrated surface brightness 
+            of the line, the second to the error on the first value. 
         """
 
         if profile == 'gaus':
@@ -305,7 +320,10 @@ class Spec:
 
                 ax.legend()
 
+                ax.set_xlabel('Wavelength (µm)')
+
                 fig.tight_layout()
+                #fig.savefig('line_integration_gaussian_profile.png', dpi=300)
                 plt.show()
 
             return flux_int, err_flux_int
@@ -317,7 +335,7 @@ class Spec:
 
             # Error on continuum
             idx_peak_line = np.where(self.values == np.nanmax(self.values))[0]
-            rvs = (c_sp * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+            rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
             rv_peak_line = rvs[idx_peak_line]
             idxs_line = np.where(np.logical_and(rvs >= rv_peak_line - line_width/2, rvs <= rv_peak_line + line_width/2))
 
@@ -367,7 +385,7 @@ class Spec:
 
             # Error on continuum
             idx_peak_line = np.where(self.values == np.nanmax(self.values))[0]
-            rvs = (c_sp * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+            rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
             rv_peak_line = rvs[idx_peak_line]
             idxs_line = np.where(
                 np.logical_and(rvs >= rv_peak_line - line_width / 2, rvs <= rv_peak_line + line_width / 2))
@@ -417,7 +435,7 @@ class Spec:
 
             # Error on continuum
             idx_peak_line = np.where(self.values == np.nanmax(self.values))[0]
-            rvs = (c_sp * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+            rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
             rv_peak_line = rvs[idx_peak_line]
             idxs_line = np.where(
                 np.logical_and(rvs >= rv_peak_line - line_width / 2, rvs <= rv_peak_line + line_width / 2))
@@ -464,7 +482,7 @@ class Spec:
 
             # Error on continuum
             idx_peak_line = np.where(self.values == np.nanmax(self.values))[0]
-            rvs = (c_sp * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+            rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
             rv_peak_line = rvs[idx_peak_line]
             idxs_line = np.where(
                 np.logical_and(rvs >= rv_peak_line - line_width / 2, rvs <= rv_peak_line + line_width / 2))
@@ -497,14 +515,17 @@ class Spec:
 
                 ax.legend()
 
+                ax.set_xlabel('Wavelenght (µm)')
+
                 fig.tight_layout()
+                #fig.savefig('line_integration_no_profile.png', dpi=300)
                 plt.show()
 
             return flux_int, err_flux_int
 
         return
 
-    def line_velocity(self, wv_line, line_width=400, control_plot=False):
+    def line_velocity(self, wv_line: float, line_width: float = 400., control_plot: bool = False):
         """Calculates the Doppler shift of an emission line using Gaussian profile fitting.
 
         Parameters 
@@ -519,13 +540,15 @@ class Spec:
         Returns
         ----------
         float, float 
-            The first value corresponds to the Doppler shift of the line, in terms of radial velocity given in km/s, the second the error associated with the first value. 
+            The first value corresponds to the Doppler shift of the line, in terms 
+            of radial velocity given in km/s, the second the error associated with 
+            the first value. 
         """
 
         def gaussian(x, a, x0, sigma):
             return a * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
 
-        rvs = (c_sp * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+        rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
         drvs = np.nanmean(np.diff(rvs))
 
         # Error on continuum
@@ -554,12 +577,20 @@ class Spec:
             fig, ax = plt.subplots(figsize=(8,4))
 
             ax.step(rvs + drvs/2, self.values, c='black', label='Data')
-            ax.plot(x_new, line_fit, c='red', label='Best Gaussian fit')
-            ax.fill_between(x_new, line_fit, 0, color='red', alpha=0.3)
+            ax.plot(x_new, line_fit, c='royalblue', label='Best Gaussian fit')
+            ax.fill_between(x_new, line_fit, 0, color='royalblue', alpha=0.3)
+            ax.text(0.05, 0.9, 'Amplitude = {:.2e}'.format(popt[0]), transform=ax.transAxes)
+            ax.text(0.05, 0.85, 'Centroid velocity = {:.3f} km/s'.format(popt[1]), transform=ax.transAxes)
+            ax.text(0.05, 0.8, 'Gaussian $\sigma$ = ' + '{:.3f} km/s'.format(popt[2]), transform=ax.transAxes)
+
+            ax.axvline(popt[1], linestyle='--', color='blue')
 
             ax.legend()
 
+            ax.set_xlabel('Radial velocity (km/s)')
+
             fig.tight_layout()
+            #fig.savefig('line_velocity.png', dpi=300)
             plt.show()
 
         return popt[1], np.sqrt(pcov[1][1])

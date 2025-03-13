@@ -75,11 +75,11 @@ import warnings
 
 from JWSToolKit.Spec import Spec
 
-c_sp = 299792458        # Speed of light (m/s)
+C_SP = 299792458        # Speed of light (m/s)
 
 
 class Cube:
-    def __init__(self, file_name):
+    def __init__(self, file_name: str):
 
         if not isinstance(file_name, str):
             raise TypeError("The input file name is invalid. It must be a character string")
@@ -105,7 +105,7 @@ class Cube:
 
 
 
-    def get_wvs(self, units='um'):
+    def get_wvs(self, units: str = 'um'):
         """Returns the wavelength grid of the data cube
 
         Parameters
@@ -152,7 +152,7 @@ class Cube:
         print('Program PI: ' + self.primary_header['PI_NAME'] + ', for the project: ' + self.primary_header['TITLE'])
         print('Program ID: ' + self.primary_header['PROGRAM'])
         print('Target: ' + self.primary_header['TARGNAME'])
-        print('Telescope: ' + self.primary_header['TELESCOP'] + ' \ Instrument: ' + self.primary_header['INSTRUME'])
+        print('Telescope: ' + self.primary_header['TELESCOP'] + ' \\ Instrument: ' + self.primary_header['INSTRUME'])
         print('Configuration: ' + self.primary_header['GRATING'] + ' + ' + self.primary_header['FILTER'])
         print('Number of integrations, groups and frames: ' + str(self.primary_header['NINTS']) + ', ' + str(self.primary_header['NGROUPS']) + ', ' + str(self.primary_header['NFRAMES']))
         print('Dither strategy: ' + str(dither_bool))
@@ -200,7 +200,7 @@ class Cube:
 
         print()
 
-    def extract_spec_circ_aperture(self, radius, position, err=False, units='Jy'):
+    def extract_spec_circ_aperture(self, radius: int, position : list[int], err=False, units: str = 'Jy'):
         """Extracts a summed spectrum in a circular aperture
 
         Parameters
@@ -259,10 +259,10 @@ class Cube:
                 if units == all_units[2] :
                     return spec
                 elif units == all_units[1]:
-                    spec *= (c_sp * 1e6 / (self.get_wvs(units='um') ** 2))
+                    spec *= (C_SP * 1e6 / (self.get_wvs(units='um') ** 2))
                     return spec
 
-    def get_world_coords(self, coords):
+    def get_world_coords(self, coords: list):
         """Returns the coordinates in degrees (R.A., Dec.) of one or more pixel positions in the data cube.
 
         Parameters
@@ -297,7 +297,7 @@ class Cube:
 
             return coords_proj
 
-    def get_px_coords(self, coords):
+    def get_px_coords(self, coords: list):
         """Returns the coordinates in pixels (x,y) of one or more pixel positions in the data cube.
 
         Parameters
@@ -330,7 +330,7 @@ class Cube:
 
             return coords_proj
 
-    def line_emission_map(self, wv_line, continuum_range=2000, line_width=400, continuum_degree=1, map_units='MJy um sr-1', control_plot=False):
+    def line_emission_map(self, wv_line: float, continuum_range: float = 2000., line_width: float = 400., continuum_degree: int = 1, map_units: str = 'MJy um sr-1', control_plot: bool = False):
         """Builds the integrated emission map of a line at a given wavelength
 
         Parameters
@@ -408,8 +408,6 @@ class Cube:
                 fig.tight_layout()
                 plt.show()
                 plt.close()
-
-
 
             print()
 

@@ -4,27 +4,32 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
+from Cube import Cube
+from Spec import Spec
+
 file = "/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644_nirspec_g140h-f100lp_s3d.fits"
 cube = Cube(file)
 
-wvs = cube.get_wvs()
+wvs_values = cube.get_wvs()
 
 cube.info()
 
-int_map = cube.line_emission_map(wv_line = 1.64355271, map_units='erg s-1 cm-2 sr-1', control_plot=False)
+#int_map = cube.line_emission_map(wv_line = 1.64355271, map_units='erg s-1 cm-2 sr-1', control_plot=False)
 
 
+WV_LINE = 1.64355271
 
+spectrum_values = cube.extract_spec_circ_aperture(radius=4, position=(25,25), units='Jy')
 
-# !!! Mettre toutes les méthodes sous le format EstUneFonction !!!
-# !!! Ajouter les annotations de type dans les méthodes !!!
+spectrum = Spec(wvs_values, spectrum_values, units='Jy')
 
+spectrum_cutted = spectrum.cut(-2000, 2000, units='vel', wv_ref=WV_LINE)
 
+spectrum_baseline_sub = spectrum_cutted.sub_baseline(wv_line=WV_LINE)
 
+integrated_intensity = spectrum_baseline_sub.line_integ(wv_line=WV_LINE, profile='gaus', control_plot=True)
 
-
-
-
+doppler_shift_line = spectrum_baseline_sub.line_velocity(wv_line=WV_LINE, control_plot=False)
 
 
 
