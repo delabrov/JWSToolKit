@@ -62,6 +62,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
 from astropy.wcs import WCS
+from scipy.ndimage import rotate
+import matplotlib.colors as colors
 
 try:
     from photutils.aperture.circle import CircularAperture
@@ -85,25 +87,72 @@ class Cube:
             raise TypeError("The input file name is invalid. It must be a character string")
         else:
             self.file_name = file_name                              # Data cube name
+            self.primary_header, self.data_header, self.data, self.errs = self._load_fits(file_name)
 
-            hdul = fits.open(self.file_name)
-            primary_hdu = hdul[0]
-            sci_hdu = hdul[1]
-            err_hdu = hdul[2]
-            #dq_hdu = hdul[3]
-            #varPoisson_hdu = hdul[4]
-            #varRnoise_hdu = hdul[5]
-            #asdf_hdu = hdul[6]
-
-            self.primary_header = primary_hdu.header                # Primary header
-            self.data_header = sci_hdu.header                       # Data header
-            self.data = sci_hdu.data                                # Data cube
-            self.errs = err_hdu.data                                # Data cube errors
             self.size = self.data.shape                             # Data cube size
             self.px_area = float(self.data_header['PIXAR_SR'])      # Pixel area (steradian)
             self.units = self.data_header['BUNIT']
 
 
+    @classmethod
+    def from_file_extension(cls, primary_header, data_header, data, errs=None):
+        """Builds a 'Cube' object from file headers and data.
+        
+        Parameters
+        -----------
+        primary_header : astropy.io.fits.header.Header
+            The JWST data cube primary header, extract with astropy.io.
+        data_header : astropy.io.fits.header.Header
+            The science header for JWST data cubes, extract with astropy.io.
+        data : array_like
+            Science data from the cube, stored in a 3D array.
+        errs : array_like, optional
+            Error data associated with the data array, stored in a 3D array
+
+        Returns
+        ---------
+        Cube object
+            A Cube object.
+        """
+
+        obj = cls.__new__(cls) 
+        obj.file_name = None  
+        obj.primary_header = primary_header
+        obj.data_header = data_header
+        obj.data = data
+        obj.errs = errs
+        obj.size = obj.data.shape
+        obj.px_area = float(obj.data_header['PIXAR_SR'])
+        obj.units = obj.data_header['BUNIT']
+
+        return obj
+
+
+    def _load_fits(self, file_name):
+        """Returns file headers and data in .fits format
+
+        Parameters
+        -----------
+        file_name : str
+            The name of the file in .fits format.
+
+        Returns
+        ---------
+        list 
+            The primary header, data header, data and file errors.
+        """
+
+        hdul = fits.open(self.file_name)
+        primary_hdu = hdul[0]
+        sci_hdu = hdul[1]
+        err_hdu = hdul[2]
+
+        primary_header  = primary_hdu.header
+        data_header     = sci_hdu.header
+        data            = sci_hdu.data
+        errs            = err_hdu.data
+
+        return primary_header, data_header, data, errs
 
     def get_wvs(self, units: str = 'um'):
         """Returns the wavelength grid of the data cube
@@ -148,7 +197,10 @@ class Cube:
 
         print()
         print('__________ DATA CUBE INFORMATION __________')
-        print('Data file name:' + self.file_name)
+        if self.file_name != None:
+            print('Data file name:' + self.file_name)
+        else:
+            print('No file name or unknown file.')
         print('Program PI: ' + self.primary_header['PI_NAME'] + ', for the project: ' + self.primary_header['TITLE'])
         print('Program ID: ' + self.primary_header['PROGRAM'])
         print('Target: ' + self.primary_header['TARGNAME'])
@@ -330,15 +382,18 @@ class Cube:
 
             return coords_proj
 
-    def line_emission_map(self, wv_line: float, continuum_range: float = 2000., line_width: float = 400., continuum_degree: int = 1, map_units: str = 'MJy um sr-1', control_plot: bool = False):
+    def line_emission_map(self, wv_line: float, continuum_range: float = 2000., line_width: float = 400., 
+        continuum_degree: int = 1, map_units: str = 'MJy um sr-1', control_plot: bool = False):
         """Builds the integrated emission map of a line at a given wavelength
 
         Parameters
         ----------
         wv_line : float
-            Wavelength in vacuum and at rest of the emission line, given in the same unit as the x-axis of the spectra.
+            Wavelength in vacuum and at rest of the emission line, 
+            given in the same unit as the x-axis of the spectra.
         continuum_range : float, optional
-            Spectral half-interval used to adjust the spectrum continuum, given in km/s. The interval is centered on the wavelength of the line.
+            Spectral half-interval used to adjust the spectrum continuum, 
+            given in km/s. The interval is centered on the wavelength of the line.
         line_width : float, optional
             Spectral width of the emission line, given in km/s.
         continuum_degree : int, optional
@@ -351,7 +406,8 @@ class Cube:
         Returns
         ----------
         array_like
-            The integrated emission map, with the same dimensions as the spatial dimensions of the initial data cube. 
+            The integrated emission map, with the same dimensions as 
+            the spatial dimensions of the initial data cube. 
         """
 
         all_map_units = ['MJy um sr-1', 'erg s-1 cm-2 sr-1']
@@ -397,7 +453,7 @@ class Cube:
 
                 fig, ax = plt.subplots(figsize=(6,5))
 
-                im = ax.imshow(integrated_map, origin='lower', cmap='magma', vmin=std_map)
+                im = ax.imshow(integrated_map, origin='lower', cmap='magma', norm=colors.LogNorm())
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 cbar = fig.colorbar(im, cax=cax)
@@ -412,6 +468,217 @@ class Cube:
             print()
 
             return integrated_map
+    
+    def pv_diagram(self, wv_line: float, slit_position: list, slit_params: list[int], baseline_width: float = 1500., 
+        line_width: float = 200., range_diagram: float = 500, control_plot=False):
+        """Generate a position-velocity diagram from the data cube for an emission line.
+
+        Parameters
+        -----------
+        wv_line : float
+            Wavelength in vacuum and at rest of the emission line, given in µm.
+        slit_position : array_like
+            Central spatial position of the slit in the data cube. 
+            The first element of the list is the x position and the second the y 
+            position. Values must be given in pixels.
+        slit_params : array_like
+            The first element of the list corresponds to the width of the slit 
+            and the second element to the height. Values must be given in pixels.
+        baseline_width : float, optional
+            Interval in which spectra baseline fitting is performed. The value must be given 
+            in km/s. 
+        line_width : float, optional
+            Spectral width of the emission line. The value must be given in km/s. This 
+            interval is used to exclude the spectral pixels of the line in the baseline fit. 
+        range_diagram : float, optional 
+            Half-interval of radial velocities in the PV diagram (i.e. half the size of 
+            the diagram's y-axis). The value must be given in km/s.
+        control_plot : float, optional
+            If True, show control map at the wavelength of the line and PV diagram.
+
+        Returns
+        ---------
+        array_like
+            The PV diagram in array_like form. The x-axis corresponds to the x-dimension 
+            of the data cube and the y-axis to radial velocities. 
+        """
+
+        wvs = self.get_wvs()                                    # µm
+        rvs = (C_SP * (wvs - wv_line) / wv_line) / 1000         # km/s
+
+        px_size = float(self.data_header['CDELT2']) * 3600
+
+        idxs_red = np.where(np.logical_and(rvs >= -baseline_width, rvs <= baseline_width))
+        wvs_red, rvs_red = wvs[idxs_red], rvs[idxs_red]
+
+
+        idxs_baseline_l = np.where(np.logical_and(rvs_red >= -baseline_width, rvs_red <= -line_width))
+        idxs_baseline_r = np.where(np.logical_and(rvs_red >= line_width, rvs_red <= baseline_width))
+        idxs_baseline = np.concatenate([idxs_baseline_l[0], idxs_baseline_r[0]])
+        wvs_baseline, rvs_baseline = wvs_red[idxs_baseline], rvs_red[idxs_baseline]
+
+        idxs_v = np.where(np.logical_and(rvs_red >= -range_diagram, rvs_red <= range_diagram))
+        rvs_v = rvs_red[idxs_v]
+
+        # Slit parameters 
+        xc_slit, yc_slit = slit_position[0], slit_position[1]
+        width_slit, height_slit = slit_params[0], slit_params[1]
+
+        # Slit origin position in matplotlib map
+        x0_slit = int(xc_slit - width_slit/2)
+        y0_slit = int(yc_slit - height_slit/2)
+
+
+        rv_map = np.zeros([np.shape(rvs_v)[0], width_slit])
+        offset_axis = (np.arange(width_slit) + x0_slit - xc_slit) * px_size      # pixel -> arcsec
+
+        idx_wv = np.argmin([abs(i-wv_line) for i in wvs])
+        map_plot = np.nansum(self.data[idx_wv-3:idx_wv+3,:,:], axis=0)           # Control Map
+
+        # Spectrum extraction
+        for i in range(width_slit):
+
+            if height_slit >= 2:
+                spectrum = self.data[:, y0_slit : y0_slit + height_slit, i + x0_slit]
+                spectrum = np.nansum(spectrum, axis=(1))
+
+            else:
+                spectrum = data[: , y0_slit , i + x0_slit]
+
+            # Baseline subtraction
+            spectrum_red = np.array(spectrum[idxs_red])
+            spectrum_baseline = spectrum_red[idxs_baseline]
+
+            params = np.polyfit(wvs_baseline, spectrum_baseline, deg=1)
+            baseline = np.poly1d(params)(wvs_red)
+            spec_baseline_sub = spectrum_red - baseline
+
+            rv_map[:,i] = spec_baseline_sub[idxs_v]
+
+
+        if control_plot:
+
+            x_axis = (np.arange(self.size[2]) - xc_slit) * px_size              # pixel -> arcsec
+            y_axis = (np.arange(self.size[1]) - yc_slit) * px_size              # pixel -> arcsec
+
+            x0_slit_arcsec = (x0_slit - xc_slit) * px_size                      # pixel -> arcsec
+            y0_slit_arcsec = (y0_slit - yc_slit) * px_size                      # pixel -> arcsec
+
+            # Control Map
+            fig, ax = plt.subplots()
+            im = ax.pcolormesh(x_axis, y_axis, map_plot, cmap='bone', zorder=1, norm=colors.LogNorm())
+            cb = fig.colorbar(im, label='Intensity (' + self.units + ')')
+            slit = plt.Rectangle((x0_slit_arcsec, y0_slit_arcsec), width_slit*px_size, height_slit*px_size, linewidth=2, angle=0, edgecolor='r', facecolor='none', zorder=2)
+            ax.add_patch(slit)
+            ax.set_aspect('equal')
+            ax.set_xlabel('$\Delta$X (arcsec)')
+            ax.set_ylabel('$\Delta$Y (arcsec)')
+            #fig.savefig('check_slit_in_map.png', dpi=300)
+            plt.show()
+
+
+            # PV Diagram
+            fig, ax = plt.subplots(figsize=(10,4))
+            cmap = plt.get_cmap('bone', 20)
+
+            im = ax.pcolormesh(offset_axis, rvs_v, rv_map, cmap=cmap)
+            cb = fig.colorbar(im, label='Intensity (' + self.units + ')')
+
+            ax.set_xlabel('$\Delta x$ (arcsec)')
+            ax.set_ylabel('RV (km/s)')
+
+            fig.tight_layout()
+            #fig.savefig('pv_diagram.png', dpi=300)
+            plt.show()
+            
+
+        return rv_map
+
+    def rotate(self, angle: float, control_plot: bool = False):
+        """Rotates the data cube by modifying the WCS of the file headers
+
+        Parameters
+        -----------
+        angle : float
+            Angle of rotation to be applied to data. The angle follows 
+            the same convention as the angle position (clockwise).
+        control_plot : float, optional
+            If True, show a channel map before and after rotation.
+
+        Returns
+        ---------
+        Cube object
+            Data cube rotated, with headers updated.
+        """
+
+        wcs = WCS(self.data_header)
+
+        # Rotation matrix definition
+        angle_radian = np.radians(angle)
+
+        # Clockwise rotation 
+        rotation_matrix = np.array([[np.cos(angle_radian),  np.sin(angle_radian),   0], 
+                                    [-np.sin(angle_radian), np.cos(angle_radian),   0], 
+                                    [0,                     0,                      1]])
+
+        wcs_rotated = wcs.deepcopy()
+        wcs_rotated.wcs.pc = np.dot(rotation_matrix, wcs.wcs.pc)
+
+        # Update header with new WCS information
+        data_header_rotated = self.data_header.copy()
+        data_header_rotated.update(wcs_rotated.to_header())
+
+        # m to µm conversion 
+        data_header_rotated['CRVAL3'] *= 1e6
+        data_header_rotated['CDELT3'] *= 1e6
+
+        # Rotate datacube without changing pixel size
+        first_rotated = rotate(self.data[0,:,:], angle, reshape=False, order=1)
+        rotated_cube = np.empty((self.size[0],) + first_rotated.shape, dtype=self.data.dtype)
+
+
+        for i in range(self.size[0]):
+
+            channel_map = self.data[i,:,:]
+            channel_map_rotated = rotate(channel_map, angle, reshape=False, order=1, mode='nearest')
+            channel_map_rotated[channel_map_rotated == 0] = np.nan
+
+            rotated_cube[i,:,:] = channel_map_rotated  
+
+        
+        if control_plot:
+
+            """
+            pos_alma_deg = [66.76071774, 26.09171944] 
+            slice_index = 1000
+            wv_slice = self.get_wvs()[slice_index]
+            
+            x_before, y_before, wv_before = wcs.world_to_pixel_values(pos_alma_deg[0], pos_alma_deg[1], wv_slice)
+            x_after, y_after, wv_after = wcs_rotated.world_to_pixel_values(pos_alma_deg[0], pos_alma_deg[1], wv_slice)
+            """
+
+            fig, axs = plt.subplots(1,2)
+
+            axs[0].imshow(abs(self.data[1000,:,:]), cmap='inferno', origin='lower', norm=colors.LogNorm())
+            axs[1].imshow(abs(rotated_cube[1000,:,:]), cmap='inferno', origin='lower', norm=colors.LogNorm())
+
+            #axs[0].scatter(x_before, y_before, marker='*', edgecolor='black', color='white', s=80)
+            #axs[1].scatter(x_after, y_after, marker='*', edgecolor='black', color='white', s=80)
+
+            axs[0].set_title('Before rotation')
+            axs[1].set_title('After rotation: ${\\theta} = 295^\degree$')
+
+            fig.tight_layout()
+            #fig.savefig('check_rotation.png', dpi=300)
+            plt.show()
+        
+
+        return Cube.from_file_extension(self.primary_header, data_header_rotated, rotated_cube)
+
+
+
+
+
 
 
 
@@ -437,41 +704,3 @@ class Cube:
 
 
 
-
-
-
-"""
-    def rotate(self, angle):
-
-        new_cube = np.full(self.size, np.nan)
-        cube_flag = np.full(self.size, 1)
-
-        for k in range(self.size[0]):
-            ch_map = self.data[k,:,:]
-            max_ch_map = np.nanmax(ch_map)
-            ch_map += max_ch_map
-
-            nan_idxs = np.isnan(ch_map)
-            ch_map_masked = np.copy(ch_map)
-            ch_map_masked[nan_idxs] = -1e6
-
-            ch_map_rotated = ndimage.rotate(ch_map_masked, angle, reshape=False)
-
-            ch_map_rotated[np.where(ch_map_rotated <= 0)] = np.nan
-            ch_map_rotated -= max_ch_map
-
-            new_cube[k,:,:] = ch_map_rotated
-
-        return new_cube
-"""
-
-
-
-
-
-
-
-
-
-
-# ________ FIN _________

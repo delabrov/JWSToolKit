@@ -3,14 +3,14 @@ Installation
 
 This section provides instructions on how to install JWSToolKit.
 
-The first step before installing JWSToolKit on your machine is to make sure you have created a python environment 
-separate from your Python system. By installing JWSToolKit, dependencies will be installed that can break and modify your existing system dependencies. 
+The first step before installing *JWSToolKit* on your machine is to make sure you have created a python environment 
+separate from your Python system. By installing *JWSToolKit*, dependencies will be installed that can break and modify your existing system dependencies. 
 
 
 Requirements
 ^^^^^^^^^^^^^
 
-Before installing JWSToolKit, you should have the following dependencies installed on your machine: 
+Before installing *JWSToolKit*, you should have the following dependencies installed on your machine: 
 
 * numpy - For mathematical processing
 * matplotlib - For data visualisation
@@ -57,12 +57,11 @@ When using a conda environment, you should install the package via the *conda* c
 
     conda install delabrov::jwstoolkit
 
-To update the package: 
+To update the package or download a specfif version: 
 
 .. code-block:: console
 
-    conda update jwstoolkit
-    conda update jwstoolkit=1.0.4       # to download a specific version 
+    conda install delabrov::jwstoolkit=1.0.4      
 
 In this situation, it is advisable to create a Python environment separate from the default system environment. To do this, enter the following command:
 

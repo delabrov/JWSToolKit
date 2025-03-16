@@ -4,32 +4,56 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-#from Cube import Cube
-#from Spec import Spec
+from Cube import Cube
+from Spec import Spec
 
-file = "/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644_nirspec_g140h-f100lp_s3d.fits"
+file = "/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644005001_05101_nirspec_g235h-f170lp_s3d.fits"
+WV_LINE = 2.121833725
+ROT_ANGLE = 295
+
+
 cube = Cube(file)
 
 wvs_values = cube.get_wvs()
 
 cube.info()
 
+
+
 #int_map = cube.line_emission_map(wv_line = 1.64355271, map_units='erg s-1 cm-2 sr-1', control_plot=False)
 
+#pv_diagram = cube.pv_diagram(wv_line=WV_LINE, slit_position=[46,35], slit_params=[28,4], control_plot=False)
 
-WV_LINE = 1.64355271
+cube_rotated = cube.rotate(angle=ROT_ANGLE, control_plot=False)
+cube_rotated.info()
 
+wvs_values_rotated = cube_rotated.get_wvs()
+
+#spectrum_rotated = cube_rotated.extract_spec_circ_aperture(4, [25,25], units='Jy')
+
+print(type(cube_rotated.primary_header))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 spectrum_values = cube.extract_spec_circ_aperture(radius=4, position=(25,25), units='Jy')
-
 spectrum = Spec(wvs_values, spectrum_values, units='Jy')
-
 spectrum_cutted = spectrum.cut(-2000, 2000, units='vel', wv_ref=WV_LINE)
-
 spectrum_baseline_sub = spectrum_cutted.sub_baseline(wv_line=WV_LINE)
-
 integrated_intensity = spectrum_baseline_sub.line_integ(wv_line=WV_LINE, profile='gaus', control_plot=True)
-
 doppler_shift_line = spectrum_baseline_sub.line_velocity(wv_line=WV_LINE, control_plot=False)
+"""
 
 
 
