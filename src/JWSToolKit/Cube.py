@@ -71,7 +71,7 @@ try:
 except ImportError:
     from photutils import CircularAperture, aperture_photometry, ApertureStats
     
-from scipy import ndimage
+#from scipy import ndimage
 from tqdm import tqdm
 import warnings
 
@@ -81,6 +81,7 @@ C_SP = 299792458        # Speed of light (m/s)
 
 
 class Cube:
+    
     def __init__(self, file_name: str):
 
         if not isinstance(file_name, str):
@@ -689,8 +690,6 @@ class Cube:
 - getters pour les différents sub-list du fichier (dq, ...)
 - convolve 
     Convolution Gaussienne en spécifiant une FWHM à une longueur d'onde donnée
-- rotate 
-    Tourne tout le cube de données à partir d'un angle 
 """
 
 

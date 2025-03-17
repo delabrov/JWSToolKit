@@ -5,45 +5,41 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 from Cube import Cube
+from Image import Image
 from Spec import Spec
 
-file = "/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644005001_05101_nirspec_g235h-f170lp_s3d.fits"
+
+MIRI_image_file = '/Users/delabrov/Documents/Data_Obs/JWST/MIRI/new_reduction/Images/pipeline_outputs/Image3_outputs/jw01644002001_02101_outputs3/jw01644-o002_t001_miri_f1800w_i2d.fits'
+NIRCAM_image_file = "/Users/delabrov/Desktop/obs_finales/NIRCam-JWST/jw01644004001_04101_nrcb_nircam_i2d.fits"
+
+image = Image(NIRCAM_image_file)
+image.info()
+
+image.plot(scale='sqrt', use_wcs=False, abs_transform=False, colorbar=True, lims=[0.5, 430], origin_arcsec=[1145,1060])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 WV_LINE = 2.121833725
 ROT_ANGLE = 295
 
-
 cube = Cube(file)
-
 wvs_values = cube.get_wvs()
-
 cube.info()
-
-
-
-#int_map = cube.line_emission_map(wv_line = 1.64355271, map_units='erg s-1 cm-2 sr-1', control_plot=False)
-
-#pv_diagram = cube.pv_diagram(wv_line=WV_LINE, slit_position=[46,35], slit_params=[28,4], control_plot=False)
-
-cube_rotated = cube.rotate(angle=ROT_ANGLE, control_plot=False)
-cube_rotated.info()
-
-wvs_values_rotated = cube_rotated.get_wvs()
-
-#spectrum_rotated = cube_rotated.extract_spec_circ_aperture(4, [25,25], units='Jy')
-
-print(type(cube_rotated.primary_header))
-
-
-
-
-
-
-
-
-
-
-
-
+"""
 
 
 """
