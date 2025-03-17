@@ -1,5 +1,5 @@
 Image Object
-===========
+===============
 
 .. automodule:: Image
    :members:
