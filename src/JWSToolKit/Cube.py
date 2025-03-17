@@ -54,7 +54,6 @@ Attributes
     units : str
         The unit of values stored in the .data table. Default values are 
         surface brightness in MJy/sr. 
-
 """
 
 import numpy as np

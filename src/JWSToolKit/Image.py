@@ -1,3 +1,56 @@
+"""
+Image class, for manipulating JWST image data.
+
+This class is used to create and manipulate Image objects. 
+Many of the JWST instruments provide data in image form (2D arrays). 
+Reduced images in the JWST pipeline have the default suffix “_i2d”. 
+This class can also be used to manipulate images generated from a 
+data cube. 
+
+The Image object has two headers, both containing information about 
+the data. The structure and information of the headers are identical to 
+those of the files output by the reduction pipeline. 
+The first header is called 'primary' and contains all general 
+information about the observations (PI, instrument, 
+date, time and duration of observations, configuration, etc.).
+The second header provides more information about 
+the data, such as 2D array size, 2-axis sampling and units. 
+A summary of the information can be displayed using the .info() method.
+
+The values (in surface brightness if units are the default) of 
+the 2D array are stored in the .data attribute. 
+The uncertainties at each pixel of the image are also stored in 
+an .errs attribute, an array of the same size as the data. 
+
+When creating a Cube object, you must provide the file name in .fits format. 
+
+Parameters
+----------
+file_name : str
+    The name of the file in .fits format. For JWST imaging, 
+    the default name contains the suffix “_i2d”.
+
+Attributes
+----------
+    primary_header : 'astropy.io.fits.Header'
+        The FITS primary header, using astropy.io tools.
+    data_header : 'astropy.io.fits.Header'
+        The FITS header associated with the data, using astropy.io tools.
+    data : array_like 
+        Data stored as an image (2D array). The two dimensions are the 
+        spatial dimensions. 
+    errs : array_like
+        Uncertainties associated with 'science' data stored in the .data attribute.
+    size : array_like
+        The number of points in each dimension.
+    px_area : float
+        Area of the spatial pixels. The value is given in steradian.
+    units : str
+        The unit of values stored in the .data table. Default values are 
+        surface brightness in MJy/sr. 
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
@@ -5,6 +58,7 @@ from astropy.wcs import WCS
 from scipy.ndimage import rotate
 import matplotlib.colors as colors
 from tqdm import tqdm
+import warnings
 
 
 class Image:
@@ -18,7 +72,7 @@ class Image:
             self.file_name = file_name                              # Image name
             self.primary_header, self.data_header, self.data, self.errs = self._load_fits(file_name)
 
-            self.size = self.data.shape                             # Data cube size
+            self.size = self.data.shape                             # Image size
             self.px_size = float(self.data_header['CDELT1']) * 3600 # Spatial pixel size (arcsec)
             self.px_area = float(self.data_header['PIXAR_SR'])      # Pixel area (steradian)
             self.units = self.data_header['BUNIT']                  # Values unit
@@ -61,7 +115,6 @@ class Image:
 
 
     def _load_fits(self, file_name):
-
         """Returns file headers and data in .fits format
 
         Parameters
@@ -163,6 +216,34 @@ class Image:
             colorbar: bool = False,
             origin_arcsec=None):
 
+        """Display the image via matplotlib 
+
+        Parameters
+        -----------
+        scale : str, optional
+            Transformation for normalizing image values, i.e. colorbar scaling. Accepted 
+            transformations are : 'lin', 'log', 'sqrt', 'asinh'.
+        use_wcs : bool, optional
+            If True, the figure axes are given in RA Dec world coordinates using the wcs 
+            of the observations.
+        lims : list, optional
+            The minimum and maximum values to be displayed on the image (may depend 
+            on the type of normalization of the figure). Limits must respect the form [x,y].
+        abs_transform : bool, optional 
+            If True, displays the absolute value of the image.
+        save : bool, optional
+            If True, saves the figure in png format.
+        colorbar : bool, optional 
+            If True, displays the color scale on figure.
+        origin_arcsec : list, optional 
+            The pixel position of the axis origin converted to arcsec. It must be given 
+            in the form [x0, y0].
+        Returns
+        -----------
+        """
+
+        warnings.filterwarnings("ignore")
+
         all_scales = ['lin', 'log', 'asinh', 'sqrt']
         cmap = 'inferno'
         img = self.data
@@ -225,4 +306,82 @@ class Image:
         fig.tight_layout()
         if save:
             fig.savefig('image.png', dpi=300)
-        plt.show()
+        #plt.show()
+
+    def save_to_dat(self, filename: str = None):
+        """Saves the image as a .dat file
+
+        Parameters
+        ----------
+        filename : str, optional
+            Output file name.
+        
+        Returns 
+        ----------
+        """
+
+        data_filename_dat = 'jwst_image.dat'
+        file_comments = '##################################################################################\n' + 'JWST image | Unit: ' + self.units + ' | Px Size: ' + str(self.px_size) + ' (arcsec)\n' + '##################################################################################' 
+
+        if filename != None:
+            data_filename_dat = filename + '.dat'
+
+        np.savetxt(data_filename_dat, self.data, fmt='%f', delimiter='  ', header=file_comments)
+
+        print()
+        print("__________ Image saved successfully __________")
+        print()
+        
+    def get_px_coords(self, coords: list):
+        """Returns the coordinates in pixels (x,y) of one or more pixel positions in the image.
+
+        Parameters
+        ----------
+        coords : list
+            Coordinates in degrees (R.A., Dec.) to be converted into pixel coordinates. It can contain two elements
+            (corresponding to the position of a single point) or two sub-lists containing the R.A. and Dec. positions of
+            several points respectively.
+
+        Returns
+        ----------
+        array_like
+             If the coordinates of a single point have been given, the list contains two elements being the (x,y)
+             coordinates converted into pixel coordinates. If the coordinates are those of several points, the list
+             contains two sub-lists containing respectively the x and y positions of the different points.
+        """
+
+        if not isinstance(coords, list):
+            raise TypeError('The input coordinates are invalid. They must be a list of two elements or a list of sublist as follow: [[x1, x2, ...], [y1, y2, ...]]')
+        else:
+            wcs_sci = WCS(self.data_header)
+            coords_proj = wcs_sci.world_to_pixel_values(coords[0], coords[1])
+
+            return coords_proj
+
+    def get_world_coords(self, coords: list):
+        """Returns the coordinates in degrees (R.A., Dec.) of one or more pixel positions in the image.
+
+        Parameters
+        ----------
+        coords : list
+            Coordinates in pixels to be converted into degrees. It can contain two elements (corresponding to the
+            position of a single point) or two sub-lists containing the horizontal and vertical positions of several
+            points respectively.
+
+        Returns
+        ----------
+        array_like
+             If the coordinates of a single point have been given, the list contains two elements being the R.A., Dec.
+             coordinates converted into degrees. If the coordinates are those of several points, the list contains two
+             sub-lists containing respectively the R.A., Dec. positions of the different points.
+        """
+
+        warnings.filterwarnings("ignore")
+
+        if not isinstance(coords, list):
+            raise TypeError('The input coordinates are invalid. They must be a list of two elements or a list of sublist as follow: [[x1, x2, ...], [y1, y2, ...]]')
+        else:
+            wcs_sci = WCS(self.data_header)
+            coords_proj = wcs_sci.pixel_to_world_values(coords[0], coords[1])
+
+            return coords_proj

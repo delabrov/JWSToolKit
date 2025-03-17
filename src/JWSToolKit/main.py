@@ -8,6 +8,7 @@ from Cube import Cube
 from Image import Image
 from Spec import Spec
 
+DGTAUB_POSITION = [66.76071774, 26.09171944]
 
 MIRI_image_file = '/Users/delabrov/Documents/Data_Obs/JWST/MIRI/new_reduction/Images/pipeline_outputs/Image3_outputs/jw01644002001_02101_outputs3/jw01644-o002_t001_miri_f1800w_i2d.fits'
 NIRCAM_image_file = "/Users/delabrov/Desktop/obs_finales/NIRCam-JWST/jw01644004001_04101_nrcb_nircam_i2d.fits"
@@ -15,12 +16,12 @@ NIRCAM_image_file = "/Users/delabrov/Desktop/obs_finales/NIRCam-JWST/jw016440040
 image = Image(NIRCAM_image_file)
 image.info()
 
-image.plot(scale='sqrt', use_wcs=False, abs_transform=False, colorbar=True, lims=[0.5, 430], origin_arcsec=[1145,1060])
+x_px, y_px = image.get_px_coords(DGTAUB_POSITION)
 
-
-
-
-
+# FIGURE
+image.plot(scale='sqrt', use_wcs=False, abs_transform=False, colorbar=True, lims=[0.5, 430])#, origin_arcsec=[1145,1060])
+plt.scatter(x_px, y_px, marker='*', color='white')
+plt.show()
 
 
 
