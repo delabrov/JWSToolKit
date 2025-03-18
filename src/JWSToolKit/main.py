@@ -14,20 +14,39 @@ MIRI_image_file = '/Users/delabrov/Documents/Data_Obs/JWST/MIRI/new_reduction/Im
 NIRCAM_image_file = "/Users/delabrov/Desktop/obs_finales/NIRCam-JWST/jw01644004001_04101_nrcb_nircam_i2d.fits"
 
 image = Image(NIRCAM_image_file)
+#image = Image(MIRI_image_file)
 image.info()
 
 x_px, y_px = image.get_px_coords(DGTAUB_POSITION)
 
+
 # FIGURE
-image.plot(scale='sqrt', use_wcs=False, abs_transform=False, colorbar=True, lims=[0.5, 430])#, origin_arcsec=[1145,1060])
-plt.scatter(x_px, y_px, marker='*', color='white')
+#image.plot(scale='sqrt', use_wcs=False, abs_transform=True, colorbar=True, lims=[0.5, 430], draw_compass=False)#, origin_arcsec=[x_px,y_px])
+#plt.scatter(x_px, y_px, marker='*', color='white')
+#plt.show()
+
+
+image_cropped = image.crop(400, 400, center=[x_px, y_px+50])
+
+#x_px, y_px = image_cropped.get_px_coords(DGTAUB_POSITION)
+#image_cropped.plot(scale='sqrt', abs_transform='True', colorbar=False, lims=[0.5, 430], draw_compass=True)#, origin_arcsec=[x_px,y_px])
+#plt.show()
+
+#image_cropped.save_as_fits()
+
+image_cropped_rotated = image_cropped.rotate(angle=65, control_plot=False)
+
+#image_cropped_rotated.plot(scale='sqrt', abs_transform='True', lims=[0.5, 430], draw_compass=True)
+#plt.show()
+
+image_convolved = image_cropped.convolve(fwhm=0.8, psf='gaussian', control_plot=True)
+
+image_convolved.plot(scale='sqrt', abs_transform='True', colorbar=False, draw_compass=True)#, origin_arcsec=[x_px,y_px])
 plt.show()
 
 
-
-
-
-
+#plt.imshow(abs(image_cropped), cmap='inferno', origin='lower')
+#plt.show()
 
 
 

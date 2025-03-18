@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-The purpose of this section is to help users get familiar with the JWSToolKit tools. 
+The purpose of this section is to help users get familiar with the *JWSToolKit* tools. 
 
 Add JWSToolKit to your Python code 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -83,9 +83,9 @@ The extract_spec_circ_aperture(*params*) method is used to retrieve a 1D vector 
     spectrum = Spec(wvs_values, spectrum_values, units='Jy')
 
 
-cube.extract_spec_circ_aperture() calculates the summed spectrum in a circular aperture, specifying a radius and position 
+*cube.extract_spec_circ_aperture()* calculates the integrated spectrum in a circular aperture, specifying a radius and position 
 (it is also possible to choose the unit of the spectrum values). The method returns a 1D list containing the spectrum values. 
-By retrieving the points on the wavelength axis (using the get_wvs() method), you can construct a *Spec* object. That's what the next one does. 
+By retrieving the points on the wavelength axis (using the *get_wvs()* method), you can construct a *Spec* object. That's what the next one does. 
 To construct a Spec object, the input parameters must be the wavelengths and associated spectrum values. The units of the spectrum points must also be given. 
 
 

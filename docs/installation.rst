@@ -1,7 +1,7 @@
 Installation
 ============
 
-This section provides instructions on how to install JWSToolKit.
+This section provides instructions on how to install *JWSToolKit*.
 
 The first step before installing *JWSToolKit* on your machine is to make sure you have created a python environment 
 separate from your Python system. By installing *JWSToolKit*, dependencies will be installed that can break and modify your existing system dependencies. 
@@ -21,7 +21,7 @@ Before installing *JWSToolKit*, you should have the following dependencies insta
 
 .. warning:: 
     In particular, pay close attention to the photutils package. 
-    To run JWSToolKit routines correctly, you need to have the latest version of photutils 
+    To run *JWSToolKit* routines correctly, you need to have the latest version of photutils 
     installed on your machine, as well as a version of Python later than 3.11.
 
 

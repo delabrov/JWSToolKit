@@ -53,10 +53,13 @@ Attributes
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+import matplotlib.colors as colors
 from astropy.io import fits
 from astropy.wcs import WCS
-from scipy.ndimage import rotate
-import matplotlib.colors as colors
+from scipy.ndimage import rotate, gaussian_filter
+from scipy.special import voigt_profile
+from scipy.signal import fftconvolve
 from tqdm import tqdm
 import warnings
 
@@ -76,7 +79,6 @@ class Image:
             self.px_size = float(self.data_header['CDELT1']) * 3600 # Spatial pixel size (arcsec)
             self.px_area = float(self.data_header['PIXAR_SR'])      # Pixel area (steradian)
             self.units = self.data_header['BUNIT']                  # Values unit
-
 
     
     @classmethod
@@ -114,7 +116,7 @@ class Image:
         return obj
 
 
-    def _load_fits(self, file_name):
+    def _load_fits(self, file_name: str):
         """Returns file headers and data in .fits format
 
         Parameters
@@ -210,11 +212,12 @@ class Image:
 
     def plot(self, scale: str = 'lin', 
             use_wcs: bool = False, 
-            lims=None, 
+            lims: list[float] = None, 
             abs_transform: bool = False, 
             save: bool = False, 
             colorbar: bool = False,
-            origin_arcsec=None):
+            origin_arcsec: list[float] = None, 
+            draw_compass: bool = False):
 
         """Display the image via matplotlib 
 
@@ -290,25 +293,59 @@ class Image:
         else:
             img_mpl = ax.imshow(img, cmap=cmap, origin='lower', norm=normalization)
 
+
         if colorbar:
             fig.colorbar(img_mpl, pad=0.05, label='Pixel values (' + self.units + ')')
 
 
         if use_wcs:
-            ax.grid(color='grey', ls='--')
-            ax.set_xlabel('Right Ascension (RA)')
-            ax.set_ylabel('Declination (Dec)')
+            if origin_arcsec != None:
+                raise Exception("You cannot specify an arcsec axis origin and display the RA Dec coordinates of the image. ")
+            else:
+                ax.grid(color='grey', ls='--')
+                ax.set_ylabel('Right Ascension (RA J2000)')
+                ax.set_xlabel('Declination (Dec J2000)')
 
         if origin_arcsec != None:
             ax.set_xlabel('$\Delta$X (arcsec)')
             ax.set_ylabel('$\Delta$Y (arcsec)')
+
+        if draw_compass:
+            
+            NE_convention = - np.radians(90)   # degree
+            l_arrow = 0.1               # % Axis full size
+            pad = 0.06                  # % Axis full size
+
+            xc, yc = 0.20, 0.80         # % Axis full size
+            
+            compass_color = 'lightgrey'
+            
+            # Image orientation
+            wcs = WCS(self.data_header)
+            wcs_matrix = wcs.wcs.pc
+            angle = np.degrees(np.arctan2(wcs_matrix[1,0], wcs_matrix[0, 0]))
+            angle_compass = np.arctan2(wcs_matrix[1,0], wcs_matrix[0, 0]) + NE_convention
+
+        
+            xN, yN = np.cos(angle_compass) * l_arrow, np.sin(angle_compass) * l_arrow
+            xE, yE = -np.sin(angle_compass) * l_arrow, np.cos(angle_compass) * l_arrow
+
+            x_N, y_N = np.cos(angle_compass) * (l_arrow + pad), np.sin(angle_compass) * (l_arrow + pad)
+            x_E, y_E = -np.sin(angle_compass) * (l_arrow + pad), np.cos(angle_compass) * (l_arrow + pad)
+
+            ax.arrow(x=xc, y=yc, dx=xN, dy=yN, color=compass_color, transform=ax.transAxes, head_width=0.015)
+            ax.arrow(x=xc, y=yc, dx=xE, dy=yE, color=compass_color, transform=ax.transAxes, head_width=0.015)
+            #ax.annotate("", xytext=(xc, yc), xy=(xN, yN), arrowprops=dict(arrowstyle="->"), color=compass_color)
+            #ax.annotate("", xytext=(xc, yc), xy=(xE, yE), arrowprops=dict(arrowstyle="->"), color=compass_color)
+            ax.text(xc + x_N, yc + y_N, 'N', color=compass_color, ha='center', va='center', fontsize=15, transform=ax.transAxes)
+            ax.text(xc + x_E, yc + y_E, 'E', color=compass_color, ha='center', va='center', fontsize=15, transform=ax.transAxes)
 
         fig.tight_layout()
         if save:
             fig.savefig('image.png', dpi=300)
         #plt.show()
 
-    def save_to_dat(self, filename: str = None):
+    def save_as_dat(self, filename: str = None):
         """Saves the image as a .dat file
 
         Parameters
@@ -332,6 +369,35 @@ class Image:
         print("__________ Image saved successfully __________")
         print()
         
+    def save_as_fits(self, filename: str = None):
+        """Saves the image as a .fits file
+
+        Parameters
+        ----------
+        filename : str, optional
+            Output file name.
+        
+        Returns 
+        ----------
+        """
+
+        new_primary_header = self.primary_header.copy()
+        new_primary_header['COMMENT'] = 'Edited with JWSToolKit'
+
+        primary_hdu = fits.PrimaryHDU(header=self.primary_header)
+        science_hdu = fits.ImageHDU(data=self.data, header=self.data_header)
+
+        hdul = fits.HDUList([primary_hdu, science_hdu])
+
+        if filename != None:
+            hdul.writeto(filename + '.fits', overwrite=True)
+        else:
+            hdul.writeto('new_jwst_image.fits', overwrite=True)
+
+        print()
+        print("__________ Image saved successfully __________")
+        print()
+   
     def get_px_coords(self, coords: list):
         """Returns the coordinates in pixels (x,y) of one or more pixel positions in the image.
 
@@ -385,3 +451,199 @@ class Image:
             coords_proj = wcs_sci.pixel_to_world_values(coords[0], coords[1])
 
             return coords_proj
+
+    def crop(self, width: int, height: int, center: list[float] = None):
+        """Cut out a portion of the image based on width and height
+
+        Parameters
+        -----------
+        width : int
+            Width of final image, in pixel.
+        height = int
+            Height of final image, in pixel.
+        center : list, optional
+            The central position of the final image in the reference frame of the 
+            initial image, in pixels. It must be in the form [x,y].
+        Returns
+        --------
+        Image object
+            An image object with modified header considering cropping parameters. 
+        """
+
+        warnings.filterwarnings("ignore")
+
+        data_cropped = np.copy(self.data)
+
+        cx, cy = self.size[1] // 2 , self.size[0] // 2
+
+        if center != None:
+            cx, cy = int(center[0]), int(center[1])
+
+        data_cropped = data_cropped[cy - height//2 : cy + height//2 , cx - width//2 : cx + width//2]
+        data_cropped_size = np.shape(data_cropped)
+
+
+        wcs = WCS(self.data_header)
+        new_wcs = wcs.deepcopy()
+        wcs_matrix = wcs.wcs.pc 
+
+        x_refpx, y_refpx = float(self.data_header['CRPIX1']), float(self.data_header['CRPIX2'])     # In the initial image
+
+        x_refpx_new, y_refpx_new = width // 2, height // 2                                          # In the cropped image
+        x_refdeg_new, y_refdeg_new = wcs.pixel_to_world_values(cx, cy)
+
+        new_wcs.wcs.crpix = [x_refpx_new+1, y_refpx_new+1]
+        new_wcs.wcs.crval = [x_refdeg_new, y_refdeg_new]
+
+        new_data_header = self.data_header.copy()
+        new_data_header.update(new_wcs.to_header())
+        new_data_header['NAXIS1'] = data_cropped_size[1]
+        new_data_header['NAXIS2'] = data_cropped_size[0]
+
+        cropped_image = Image.from_file_extension(self.primary_header, new_data_header, data_cropped)
+
+        return cropped_image
+
+    def rotate(self, angle: float, control_plot: bool = False):
+        """Rotates the image by modifying the WCS of the file headers.
+
+        Parameters
+        -----------
+        angle : float
+            Angle of rotation to be applied to data. The angle follows 
+            the counter-clockwise convention.
+        control_plot : float, optional
+            If True, show the image before and after rotation.
+
+        Returns
+        ---------
+        Image object
+            Image rotated, with headers updated.
+        """
+
+        wcs = WCS(self.data_header)
+
+        # Rotation matrix definition
+        angle_radian = np.radians(angle)
+
+        # Counter-clockwise rotation 
+        rotation_matrix = np.array([[np.cos(angle_radian),  np.sin(angle_radian)], 
+                                    [-np.sin(angle_radian), np.cos(angle_radian)]])         
+
+        wcs_rotated = wcs.deepcopy()
+        wcs_rotated.wcs.pc = np.dot(rotation_matrix, wcs.wcs.pc)
+
+        # Update header with new WCS information
+        data_header_rotated = self.data_header.copy()
+        data_header_rotated.update(wcs_rotated.to_header())
+
+        # Rotate image without changing pixel size
+        rotated_image = rotate(self.data, angle, reshape=False, order=1, mode='nearest')
+
+
+        if control_plot:
+
+            fig, axs = plt.subplots(1,2)
+
+            axs[0].imshow(abs(self.data), cmap='inferno', origin='lower', norm=colors.LogNorm())
+            axs[1].imshow(abs(rotated_image), cmap='inferno', origin='lower', norm=colors.LogNorm())
+
+            axs[0].set_title('Before rotation')
+            axs[1].set_title('After rotation: ${\\theta} = $' + '{}'.format(angle) + '$^\degree$')
+
+            fig.tight_layout()
+            #fig.savefig('check_rotation.png', dpi=300)
+            plt.show()
+
+        return Image.from_file_extension(self.primary_header, data_header_rotated, rotated_image)
+
+    def convolve(self, fwhm: float, psf: str = 'gaus', control_plot: bool = False):
+
+        all_psf = ['gaussian', 'voigt', 'lorentz']
+
+        fwhm_px = fwhm / self.px_size                           # arcsec into pixel conversion
+
+        convolved_image = np.full(self.size, np.nan)
+        
+        if psf == 'gaussian':
+
+            sigma_px = fwhm_px / (2 * np.sqrt(2 * np.log(2)))   # Gaussian width
+            convolved_image = gaussian_filter(self.data, sigma=sigma_px)
+
+        elif psf == 'voigt':                                    # Gaussian profile convolved with Lorentz profile
+
+            x_px = fwhm_px / 1.63759                            # Voigt FWHM such as FWHM_G = FWHM_L
+            sigma_gaus_px = x_px / (2 * np.sqrt(2 * np.log(2))) # Gaussian width
+            gamma_lorentz_px = x_px / 2                         # Lorentz width
+
+            # Kernel parameters
+            kernel_radius = int(np.ceil(3 * max(sigma_gaus_px, gamma_lorentz_px)))
+            kernel_size = 2 * kernel_radius + 1
+
+            x_values = np.linspace(-kernel_radius, kernel_radius, kernel_size)
+
+            # 1D Voigt profile
+            voigt_profile_1d = voigt_profile(x_values, sigma_gaus_px, gamma_lorentz_px)
+            # 2D Voigt profile
+            voigt_kernel_2d = np.outer(voigt_profile_1d, voigt_profile_1d)
+            # Profile Normalization
+            voigt_kernel_2d /= np.sum(voigt_kernel_2d)
+            # 2D Convolution
+            convolved_image = fftconvolve(self.data, voigt_kernel_2d, mode='same')
+
+        elif psf == 'lorentz':
+
+            gamma_lorentz_px = fwhm_px / 2                      # Lorentz width
+
+            # Kernel parameters
+            kernel_radius = int(np.ceil(3*gamma_lorentz_px))
+            kernel_size = 2 * kernel_radius + 1
+
+            x_values = np.linspace(-kernel_radius, kernel_radius, kernel_size)
+
+            # 1D lorentz profile | Formula : L(x) = (1/pi) * (gamma / (x^2 + γ^2))
+            lorentz_1d = (1 / np.pi) * (gamma_lorentz_px / (x_values**2 + gamma_lorentz_px**2))
+
+            # 2D Lorentz profile
+            lorentz_kernel_2d = np.outer(lorentz_1d, lorentz_1d)
+            # Profile normalization
+            lorentz_kernel_2d /= np.sum(lorentz_kernel_2d)
+            # 2D Convolution
+            convolved_image = fftconvolve(self.data, lorentz_kernel_2d, mode='same')
+
+
+        if control_plot:
+
+            fig, axs = plt.subplots(1,2)
+
+            axs[0].imshow(self.data, origin='lower', cmap='inferno')
+            axs[1].imshow(convolved_image, origin='lower', cmap='inferno')
+
+            ny_image, nx_image = convolved_image.shape
+            ellipse_center = (nx_image * 0.1, ny_image * 0.9)
+
+            psf_ellipse = Ellipse(xy=ellipse_center, width=fwhm_px, height=fwhm_px, 
+                    edgecolor='white', facecolor='none', lw=1)
+
+            axs[1].add_patch(psf_ellipse)
+            axs[1].annotate('FWHM PSF', xy=ellipse_center,
+                 xytext=(ellipse_center[0] + fwhm_px, ellipse_center[1]),
+                 arrowprops=dict(facecolor='red', arrowstyle='->'),
+                 color='white', verticalalignment='center')
+
+            axs[0].set_title('Originale image')
+            axs[1].set_title('Convolved image')
+
+            fig.tight_layout()
+            plt.show()
+
+
+        return Image.from_file_extension(self.primary_header, self.data_header, convolved_image)
+
+
+
+
+
+
+
+    

@@ -595,13 +595,13 @@ class Cube:
         return rv_map
 
     def rotate(self, angle: float, control_plot: bool = False):
-        """Rotates the data cube by modifying the WCS of the file headers
+        """Rotates the data cube by modifying the WCS of the file headers.
 
         Parameters
         -----------
         angle : float
             Angle of rotation to be applied to data. The angle follows 
-            the same convention as the angle position (clockwise).
+            the counter-clockwise convention.
         control_plot : float, optional
             If True, show a channel map before and after rotation.
 
@@ -616,7 +616,7 @@ class Cube:
         # Rotation matrix definition
         angle_radian = np.radians(angle)
 
-        # Clockwise rotation 
+        # Counter-clockwise rotation 
         rotation_matrix = np.array([[np.cos(angle_radian),  np.sin(angle_radian),   0], 
                                     [-np.sin(angle_radian), np.cos(angle_radian),   0], 
                                     [0,                     0,                      1]])
@@ -648,25 +648,13 @@ class Cube:
         
         if control_plot:
 
-            """
-            pos_alma_deg = [66.76071774, 26.09171944] 
-            slice_index = 1000
-            wv_slice = self.get_wvs()[slice_index]
-            
-            x_before, y_before, wv_before = wcs.world_to_pixel_values(pos_alma_deg[0], pos_alma_deg[1], wv_slice)
-            x_after, y_after, wv_after = wcs_rotated.world_to_pixel_values(pos_alma_deg[0], pos_alma_deg[1], wv_slice)
-            """
-
             fig, axs = plt.subplots(1,2)
 
             axs[0].imshow(abs(self.data[1000,:,:]), cmap='inferno', origin='lower', norm=colors.LogNorm())
             axs[1].imshow(abs(rotated_cube[1000,:,:]), cmap='inferno', origin='lower', norm=colors.LogNorm())
 
-            #axs[0].scatter(x_before, y_before, marker='*', edgecolor='black', color='white', s=80)
-            #axs[1].scatter(x_after, y_after, marker='*', edgecolor='black', color='white', s=80)
-
             axs[0].set_title('Before rotation')
-            axs[1].set_title('After rotation: ${\\theta} = 295^\degree$')
+            axs[1].set_title('After rotation: ${\\theta} = $' + '{}'.format(angle) + '$^\degree$')
 
             fig.tight_layout()
             #fig.savefig('check_rotation.png', dpi=300)
