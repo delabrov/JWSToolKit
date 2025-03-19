@@ -45,6 +45,10 @@ image_convolved.plot(scale='sqrt', abs_transform='True', colorbar=False, draw_co
 plt.show()
 
 
+
+
+
+
 #plt.imshow(abs(image_cropped), cmap='inferno', origin='lower')
 #plt.show()
 
