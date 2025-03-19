@@ -1,5 +1,5 @@
 Spec Object
-==========
+==============
 
 .. automodule:: src.Spec
    :members:
