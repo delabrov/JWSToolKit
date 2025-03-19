@@ -557,6 +557,22 @@ class Image:
         return Image.from_file_extension(self.primary_header, data_header_rotated, rotated_image)
 
     def convolve(self, fwhm: float, psf: str = 'gaus', control_plot: bool = False):
+        """Convolves the image with a convolution kernel.
+
+        Parameters
+        -----------
+        fwhm : float
+            Full-width at half-maximum of convolution profile. Whatever the convolution 
+            kernel, the 2D profile is symmetrical. The value must be given in arcsec.
+        psf : str, optional
+            Convolution kernel. Possible choices are: 'gaussian', 'voigt', 'lorentz'.
+        control_plot: bool, optional    
+            If True, shows the image before and after convolution.
+        Returns
+        -----------
+        Image object
+            The initial image convoluted by a PSF profile.
+        """
 
         all_psf = ['gaussian', 'voigt', 'lorentz']
 
