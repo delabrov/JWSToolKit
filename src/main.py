@@ -20,6 +20,8 @@ image.info()
 x_px, y_px = image.get_px_coords(DGTAUB_POSITION)
 
 
+
+
 # FIGURE
 #image.plot(scale='sqrt', use_wcs=False, abs_transform=True, colorbar=True, lims=[0.5, 430], draw_compass=False)#, origin_arcsec=[x_px,y_px])
 #plt.scatter(x_px, y_px, marker='*', color='white')
