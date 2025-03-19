@@ -55,7 +55,6 @@ Attributes
         The unit of values stored in the .data table. Default values are 
         surface brightness in MJy/sr. 
 """
-print("Importation de src.Cube")
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -71,11 +70,10 @@ try:
 except ImportError:
     from photutils import CircularAperture, aperture_photometry, ApertureStats
     
-#from scipy import ndimage
 from tqdm import tqdm
 import warnings
 
-from JWSToolKit.Spec import Spec
+from Spec import Spec
 
 C_SP = 299792458        # Speed of light (m/s)
 
@@ -572,8 +570,8 @@ class Cube:
             slit = plt.Rectangle((x0_slit_arcsec, y0_slit_arcsec), width_slit*px_size, height_slit*px_size, linewidth=2, angle=0, edgecolor='r', facecolor='none', zorder=2)
             ax.add_patch(slit)
             ax.set_aspect('equal')
-            ax.set_xlabel('$\Delta$X (arcsec)')
-            ax.set_ylabel('$\Delta$Y (arcsec)')
+            ax.set_xlabel(r'$\Delta$X (arcsec)')
+            ax.set_ylabel(r'$\Delta$Y (arcsec)')
             #fig.savefig('check_slit_in_map.png', dpi=300)
             plt.show()
 
@@ -585,7 +583,7 @@ class Cube:
             im = ax.pcolormesh(offset_axis, rvs_v, rv_map, cmap=cmap)
             cb = fig.colorbar(im, label='Intensity (' + self.units + ')')
 
-            ax.set_xlabel('$\Delta x$ (arcsec)')
+            ax.set_xlabel(r'$\Delta x$ (arcsec)')
             ax.set_ylabel('RV (km/s)')
 
             fig.tight_layout()
@@ -655,7 +653,7 @@ class Cube:
             axs[1].imshow(abs(rotated_cube[1000,:,:]), cmap='inferno', origin='lower', norm=colors.LogNorm())
 
             axs[0].set_title('Before rotation')
-            axs[1].set_title('After rotation: ${\\theta} = $' + '{}'.format(angle) + '$^\degree$')
+            axs[1].set_title('After rotation: ${\\theta} = $' + '{}'.format(angle) + r'$^\degree$')
 
             fig.tight_layout()
             #fig.savefig('check_rotation.png', dpi=300)
