@@ -1,5 +1,5 @@
 Cube Object
-==========
+=============
 
 .. automodule:: src.Cube
    :members:

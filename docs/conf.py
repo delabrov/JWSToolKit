@@ -33,6 +33,11 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'furo' #'sphinx_rtd_theme'
 html_static_path = ['_static']
 
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}
 
 html_theme_options = {
     "light_logo" : 'JWSToolKit_logo_light_fullsize.png', 
