@@ -39,7 +39,7 @@ units : str
 dwvs : float
     Interval between two points on the wavelength axis, in µm.
 """
-
+print("Importation de src.Cube")
 
 import numpy as np
 import matplotlib.pyplot as plt
