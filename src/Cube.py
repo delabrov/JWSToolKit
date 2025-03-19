@@ -73,7 +73,8 @@ except ImportError:
 from tqdm import tqdm
 import warnings
 
-from Spec import Spec
+from .Spec import Spec
+from .Image import Image
 
 C_SP = 299792458        # Speed of light (m/s)
 
