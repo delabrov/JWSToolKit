@@ -1,7 +1,7 @@
 Cube Object
 ==========
 
-.. automodule:: Cube
+.. automodule:: src.Cube
    :members:
    :show-inheritance:
    :undoc-members:

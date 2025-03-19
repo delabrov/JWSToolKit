@@ -1,7 +1,7 @@
 Image Object
 ===============
 
-.. automodule:: Image
+.. automodule:: src.Image
    :members:
    :show-inheritance:
    :undoc-members:

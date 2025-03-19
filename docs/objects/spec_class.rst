@@ -1,7 +1,7 @@
 Spec Object
 ==========
 
-.. automodule:: Spec
+.. automodule:: src.Spec
    :members:
    :show-inheritance:
    :undoc-members:
