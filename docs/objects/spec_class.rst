@@ -1,7 +1,7 @@
 Spec Object
 ==============
 
-.. automodule:: src.Spec
+.. automodule:: JWSToolKit.Spec
    :members:
    :show-inheritance:
    :undoc-members:

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "JWSToolKit"
-version = "1.1.1"
+version = "1.1.2"
 description = "A python package for handling JWST observations"
 readme = "README.md"
 authors = [{ name = "Valentin Delabrosse", email = "valentin.delabrosse@univ-grenoble-alpes.fr" }]
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = ".."}  # Avant était dans source
+package-dir = {"" = "src/"}  
 
 [tool.setuptools.packages.find]
-where = [".."]  # ✅ Avant était dans source
+where = ["src/"]  

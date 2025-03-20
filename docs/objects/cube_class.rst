@@ -1,7 +1,7 @@
 Cube Object
 =============
 
-.. automodule:: src.Cube
+.. automodule:: JWSToolKit.Cube
    :members:
    :show-inheritance:
    :undoc-members:

@@ -1,7 +1,7 @@
 Image Object
 ===============
 
-.. automodule:: src.Image
+.. automodule:: JWSToolKit.Image
    :members:
    :show-inheritance:
    :undoc-members:

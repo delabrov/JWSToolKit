@@ -1,12 +1,15 @@
-from JWSToolKit.Cube import Cube
-from JWSToolKit.Spec import Spec
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
-from Cube import Cube
-from Image import Image
-from Spec import Spec
+import sys
+import os 
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+
+from JWSToolKit.Cube import Cube
+from JWSToolKit.Image import Image
+from JWSToolKit.Spec import Spec
 
 DGTAUB_POSITION = [66.76071774, 26.09171944]
 
@@ -18,8 +21,6 @@ image = Image(NIRCAM_image_file)
 image.info()
 
 x_px, y_px = image.get_px_coords(DGTAUB_POSITION)
-
-
 
 
 # FIGURE
