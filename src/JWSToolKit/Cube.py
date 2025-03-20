@@ -286,11 +286,11 @@ class Cube:
             raise Exception("The input units are invalid. They must be one of the following units: Jy, erg s-1 cm-2 um-1, erg s-1 cm-2 Hz-1")
         else:
 
-            spec_len = self.size[0]
-            spec = np.zeros(spec_len)
+
+            spec = np.zeros(self.size[0])
 
             print('__________ Spectrum extraction __________')
-            for i in tqdm(range(spec_len)):
+            for i in tqdm(range(self.size[0])):
 
                 ch_map = self.data[i,:,:]           # MJy/sr
                 nan_idxs = np.isnan(ch_map)
