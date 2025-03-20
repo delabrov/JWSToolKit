@@ -1,0 +1,32 @@
+name: Code Coverage
+
+on: [push, pull_request]  # Exécuter à chaque push et PR
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"  # Mets la version Python de ton projet
+
+    - name: Install dependencies
+      run: |
+        pip install pytest pytest-cov
+        pip install -r requirements.txt  # Installer les dépendances du projet
+
+    - name: Run tests and generate coverage report
+      run: |
+        pytest --cov=JWSToolKit --cov-report=xml
+
+    - name: Upload coverage report to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        fail_ci_if_error: true  # Échoue si l'upload échoue
