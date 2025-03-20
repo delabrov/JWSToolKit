@@ -1,8 +1,12 @@
 import pytest
 import numpy as np
 from astropy.io.fits import Header
-from JWSToolKit.Cube import Cube
 from astropy.io import fits
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+
+from JWSToolKit.Cube import Cube
+
 
 
 def test_cube_initialization(mocker):
