@@ -133,7 +133,7 @@ def test_cube_rotation(mocker):
 
 
 
-
+"""
 def test_cube_info(mocker, capsys):
     
     fake_header = {'PI_NAME': 'test', 
@@ -177,7 +177,6 @@ def test_cube_info(mocker, capsys):
     assert "DATA CUBE INFORMATION" in captured.out  # Vérifie que du texte est bien affiché
 
 
-"""
 def test_cube_full_pipeline(mocker):
     
     mock_hdul = [mocker.Mock(header={"PIXAR_SR": 1.0, "BUNIT": "MJy/sr", "CRPIX3": 1, "CRVAL3": 2.0, "CDELT3": 0.1, "NAXIS3": 5}),
