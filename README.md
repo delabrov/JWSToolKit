@@ -6,7 +6,6 @@
 ![Anaconda](https://img.shields.io/badge/Anaconda-%2344A833.svg?style=for-the-badge&logo=anaconda&logoColor=white)
 ![Pytest](https://img.shields.io/badge/pytest-%23ffffff.svg?style=for-the-badge&logo=pytest&logoColor=2f9fe3)
 [![codecov](https://codecov.io/gh/delabrov/JWSToolKit/graph/badge.svg?token=FTE2RPJTJ3)](https://codecov.io/gh/delabrov/JWSToolKit)
-![example workflow](https://github.com/github/docs/actions/workflows/main.yml/badge.svg)
 
 A python package for handling JWST observations 
 
