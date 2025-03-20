@@ -55,12 +55,13 @@ image_cropped_rotated = image_cropped.rotate(angle=65, control_plot=False)
 #image_cropped_rotated.plot(scale='sqrt', abs_transform='True', lims=[0.5, 430], draw_compass=True)
 #plt.show()
 
-image_convolved = image_cropped.convolve(fwhm=0.8, psf='gaussian', control_plot=True)
+#image_convolved = image_cropped.convolve(fwhm=0.8, psf='gaussian', control_plot=True)
 
-image_convolved.plot(scale='sqrt', abs_transform='True', colorbar=False, draw_compass=True)#, origin_arcsec=[x_px,y_px])
-plt.show()
+#image_convolved.plot(scale='sqrt', abs_transform='True', colorbar=False, draw_compass=True)#, origin_arcsec=[x_px,y_px])
+#plt.show()
+x_source, y_source = image_cropped.get_px_coords(DGTAUB_POSITION)
 
-
+s_ax, int_values = image_cropped.extract_intensity_profile(center=[x_source, y_source], angle=0, length=250, control_plot=False)
 
 
 

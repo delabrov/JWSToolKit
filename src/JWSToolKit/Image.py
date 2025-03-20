@@ -56,7 +56,7 @@ from matplotlib.patches import Ellipse
 import matplotlib.colors as colors
 from astropy.io import fits
 from astropy.wcs import WCS
-from scipy.ndimage import rotate, gaussian_filter
+from scipy.ndimage import rotate, gaussian_filter, map_coordinates
 from scipy.special import voigt_profile
 from scipy.signal import fftconvolve
 from tqdm import tqdm
@@ -655,8 +655,45 @@ class Image:
 
         return Image.from_file_extension(self.primary_header, self.data_header, convolved_image)
 
+    def extract_intensity_profile(self, center: list[float], angle: float, length: float, control_plot: bool = False):
 
+        x0, y0 = center
+        theta = np.deg2rad(angle - 90)          # Astronomic PA convention
 
+        s_min = -np.floor(length/2.0)
+        s_max = np.floor(length/2.0)
+        s = np.arange(s_min, s_max + 1, 1.0)
+
+        xs = x0 + s * np.cos(theta)
+        ys = y0 + s * np.sin(theta)
+
+        coords = np.vstack((ys, xs))
+        intensities_values = map_coordinates(self.data, coords, order=1, mode='constant', cval=np.nan)
+ 
+
+        if control_plot:
+            
+            fig, axs = plt.subplots(1,2, figsize=(8,4))
+            axs[0].imshow(abs(self.data), origin='lower', cmap='inferno', extent=[0, self.size[1], 0, self.size[0]],  norm=colors.LogNorm(vmin=1))
+            axs[0].set_xlabel("X (pixels)")
+            axs[0].set_ylabel("Y (pixels)")
+
+            x1 = x0 + s_min * np.cos(theta)
+            y1 = y0 + s_min * np.sin(theta)
+            x2 = x0 + s_max * np.cos(theta)
+            y2 = y0 + s_max * np.sin(theta)
+
+            axs[0].plot([x1, x2], [y1, y2], '-r', linewidth=2.0)
+            axs[0].scatter([x0], [y0], marker='o', color='red', edgecolor='white', zorder=2) 
+
+            axs[1].step(distances, intensities_values, color='black')
+            axs[1].set_xlabel('Pixels')
+            axs[1].set_ylabel('Intensities (' + self.units + ')')
+
+            fig.tight_layout()
+            plt.show()
+
+        return s, intensities_values
 
 
 
