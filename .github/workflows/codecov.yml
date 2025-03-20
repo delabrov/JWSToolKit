@@ -1,6 +1,6 @@
 name: Code Coverage
 
-on: [push, pull_request]  # Exécuter à chaque push et PR
+on: [push, pull_request]  
 
 jobs:
   test:
