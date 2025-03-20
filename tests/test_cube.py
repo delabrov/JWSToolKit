@@ -2,6 +2,8 @@ import pytest
 import numpy as np
 from astropy.io.fits import Header
 from astropy.io import fits
+import sys
+import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
