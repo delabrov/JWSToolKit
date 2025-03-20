@@ -10,6 +10,8 @@
 [![Documentation Status](https://readthedocs.org/projects/jwstoolkit/badge/?version=latest)](https://jwst-data-docs.readthedocs.io/en/latest/)
 [![codecov](https://codecov.io/gh/delabrov/JWSToolKit/graph/badge.svg?token=FTE2RPJTJ3)](https://codecov.io/gh/delabrov/JWSToolKit)
 [![PyPI version](https://img.shields.io/pypi/v/jwstoolkit)](https://pypi.org/project/jwstoolkit/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/jwstoolkit)](https://pypi.org/project/jwstoolkit/)
+
 
 
 A python package for handling JWST observations 
