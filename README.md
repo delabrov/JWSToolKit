@@ -5,9 +5,11 @@
 ![PyPi](https://img.shields.io/badge/pypi-%23ececec.svg?style=for-the-badge&logo=pypi&logoColor=1f73b7)
 ![Anaconda](https://img.shields.io/badge/Anaconda-%2344A833.svg?style=for-the-badge&logo=anaconda&logoColor=white)
 ![Pytest](https://img.shields.io/badge/pytest-%23ffffff.svg?style=for-the-badge&logo=pytest&logoColor=2f9fe3)
-[![codecov](https://codecov.io/gh/delabrov/JWSToolKit/graph/badge.svg?token=FTE2RPJTJ3)](https://codecov.io/gh/delabrov/JWSToolKit)
-[![Documentation Status](https://readthedocs.org/projects/jwstoolkit/badge/?version=latest)](https://jwst-data-docs.readthedocs.io/en/latest/)
+
 [![Build Status](https://img.shields.io/github/actions/workflow/status/delabrov/jwstoolkit/ci.yml?branch=main)](https://github.com/delabrov/jwstoolkit/actions)
+[![Documentation Status](https://readthedocs.org/projects/jwstoolkit/badge/?version=latest)](https://jwst-data-docs.readthedocs.io/en/latest/)
+[![codecov](https://codecov.io/gh/delabrov/JWSToolKit/graph/badge.svg?token=FTE2RPJTJ3)](https://codecov.io/gh/delabrov/JWSToolKit)
+
 
 A python package for handling JWST observations 
 
