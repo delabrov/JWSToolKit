@@ -1,5 +1,6 @@
 ![Logo GitHub](https://github.com/delabrov/JWSToolKit/blob/main/docs/_static/JWSToolKit_logo_dark_fullsize.png)
 
+https://codecov.io/gh/delabrov/JWSToolKit/graphs/sunburst.svg?token=FTE2RPJTJ3
 A python package for handling JWST observations 
 
 ## About
