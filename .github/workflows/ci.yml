@@ -26,6 +26,9 @@ jobs:
       - name: Verify dist/ directory
         run: ls -la dist/
 
+      - name: Clear GitHub Cache (Optional)
+        run: rm -rf ~/.npm ~/.cache ~/.cargo ~/.yarn
+
       - name: Upload package artifact
         uses: actions/upload-artifact@v3
         with:
