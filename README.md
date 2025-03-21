@@ -17,7 +17,7 @@
 A python package for handling JWST observations 
 
 ## About
-JWSToolKit is an open-source python package designed to simplify the manipulation of observational data from the James Webb Space Telescope. 
+*JWSToolKit* is an open-source python package designed to simplify the manipulation of observational data from the James Webb Space Telescope. 
 The package has been developed to manipulate spectra, images and data cubes from all JWST instruments.
 
 ## Useful links
