@@ -12,18 +12,18 @@ from JWSToolKit.Image import Image
 from JWSToolKit.Spec import Spec
 
 DGTAUB_POSITION = [66.76071774, 26.09171944]
+WV_LINE = 1.64355271  #  Wavelength (µm)
 
 MIRI_image_file     = '/Users/delabrov/Documents/Data_Obs/JWST/MIRI/new_reduction/Images/pipeline_outputs/Image3_outputs/jw01644002001_02101_outputs3/jw01644-o002_t001_miri_f1800w_i2d.fits'
 NIRCAM_image_file   = "/Users/delabrov/Desktop/obs_finales/NIRCam-JWST/jw01644004001_04101_nrcb_nircam_i2d.fits"
-NIRSpec_cube_file   = '/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644005001_05101_nirspec_g235h-f170lp_s3d.fits'
+NIRSpec_cube_file   = "/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644005001_02101_nirspec_g140h-f100lp_s3d.fits"#'/Users/delabrov/Desktop/obs_finales/NIRSpec-JWST/DGTauB/jw01644005001_05101_nirspec_g235h-f170lp_s3d.fits'
 
 
 cube = Cube(NIRSpec_cube_file)
 
 spec = cube.extract_spec_circ_aperture(radius=4, position=[25,25], units='Jy')
 
-
-
+integr_map = cube.line_emission_map(wv_line=WV_LINE, control_plot=True)
 
 
 

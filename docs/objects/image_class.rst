@@ -1,5 +1,5 @@
-Image Object
-===============
+Image Object DocString
+======================
 
 .. automodule:: JWSToolKit.Image
    :members:

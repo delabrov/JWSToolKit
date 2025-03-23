@@ -1,5 +1,5 @@
-Spec Object
-==============
+Spec Object DocString
+=====================
 
 .. automodule:: JWSToolKit.Spec
    :members:

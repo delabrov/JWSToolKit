@@ -655,7 +655,27 @@ class Image:
 
         return Image.from_file_extension(self.primary_header, self.data_header, convolved_image)
 
-    def extract_intensity_profile(self, center: list[float], angle: float, length: float, control_plot: bool = False):
+    def extract_intensity_profile(self, center: list[float], angle: float, 
+                length: float, control_plot: bool = False):
+        """Extract an intensity profile along a straight line.
+
+        Parameters
+        -----------
+        center : list
+            The central position from which the profile is extracted. 
+            Is the pivot point of the line, given in pixels as [x,y].
+        angle : float
+            The position angle of the extraction line, given in degrees.
+        length : float 
+            Length of extraction line, given in pixels.
+        control_plot : bool, optional
+            If True, displays the extraction line on the image.
+
+        Returns
+        -----------
+        list
+            The spatial axis in pixels and associated intensity values. 
+        """
 
         x0, y0 = center
         theta = np.deg2rad(angle - 90)          # Astronomic PA convention

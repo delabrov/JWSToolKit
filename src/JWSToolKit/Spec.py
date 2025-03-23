@@ -228,26 +228,49 @@ class Spec:
            The initial spectrum, subtracted from its baseline.
         """
 
-        dwvs = np.nanmean(np.diff(self.wvs))
+        spec_cont_sub = np.full(self.values.shape, np.nan)
+        baseline = np.copy(spec_cont_sub)
 
-        rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+        if np.all(self.values == 0) or np.all(np.isnan(self.values)):
 
-        idx_max = np.where(self.values == np.nanmax(self.values))
-        v_max = rvs[idx_max]
-        v_min_line, v_max_line = v_max - mask_rv, v_max + mask_rv
+            spec_cont_sub = np.copy(self.values)
+            baseline = np.copy(self.values)
 
-        idxs_line = np.where(np.logical_and(rvs >= v_min_line, rvs <= v_max_line))
-        idxs_cont = np.concatenate([np.arange(0,idxs_line[0][0]+1), np.arange(idxs_line[0][-1], np.shape(self.values)[0])])
+        else:
 
-        wv_min, wv_max= self.wvs[idxs_line[0][0]], self.wvs[idxs_line[0][-1]]
+            dwvs = np.nanmean(np.diff(self.wvs))
 
-        wvs_cont = self.wvs[idxs_cont]
-        spec_cont = self.values[idxs_cont]
+            rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
 
-        params = np.polyfit(wvs_cont, spec_cont, deg=deg)
-        baseline = np.poly1d(params)(self.wvs)
+            std_continuum = np.nanstd(self.values)
 
-        spec_cont_sub = self.values - baseline
+            idx_max = np.where(self.values == np.nanmax(self.values))
+            v_max = rvs[idx_max]
+
+            if len(v_max) > 1:
+                
+                spec_cont_sub = np.copy(self.values)
+                baseline = np.zeros(self.values.shape)
+
+            else:
+
+                v_min_line, v_max_line = v_max - mask_rv, v_max + mask_rv
+
+                idxs_line = np.where(np.logical_and(rvs >= v_min_line, rvs <= v_max_line))
+                idxs_cont = np.concatenate([np.arange(0,idxs_line[0][0]+1), np.arange(idxs_line[0][-1], np.shape(self.values)[0])])
+
+                wv_min, wv_max= self.wvs[idxs_line[0][0]], self.wvs[idxs_line[0][-1]]
+
+                wvs_cont = self.wvs[idxs_cont]
+                spec_cont = self.values[idxs_cont]
+
+                params = np.polyfit(wvs_cont, spec_cont, deg=deg)
+                baseline = np.poly1d(params)(self.wvs)
+
+                spec_cont_sub = self.values - baseline
+
+
+
 
         if control_plot:
             fig, ax = plt.subplots(figsize=(9,4))
@@ -481,27 +504,33 @@ class Spec:
 
             # Error on continuum
             idx_peak_line = np.where(self.values == np.nanmax(self.values))[0]
-            rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
-            rv_peak_line = rvs[idx_peak_line]
-            idxs_line = np.where(
-                np.logical_and(rvs >= rv_peak_line - line_width / 2, rvs <= rv_peak_line + line_width / 2))
 
-            n_bins = np.shape(idxs_line)[1]
-
-            idxs_cont_l = np.where(rvs <= rv_peak_line - line_width / 2)
-            idxs_cont_r = np.where(rvs >= rv_peak_line + line_width / 2)
-            idxs_cont = np.concatenate([idxs_cont_l[0], idxs_cont_r[0]])
-
-            std_cont = np.nanstd(self.values[idxs_cont])
-
-            wvs_line = self.wvs[idxs_line]
-            spec_line = self.values[idxs_line]
-
-            # Line integration
-            flux_int = integrate.simpson(spec_line, wvs_line)
-
-            # Error on flux value
+            flux_int = 0
             err_flux_int = 0
+
+            if len(idx_peak_line) == 1:
+
+                rvs = (C_SP * (self.wvs - wv_line) / wv_line) / 1000  # km/s
+                rv_peak_line = rvs[idx_peak_line]
+                idxs_line = np.where(
+                    np.logical_and(rvs >= rv_peak_line - line_width / 2, rvs <= rv_peak_line + line_width / 2))
+
+                n_bins = np.shape(idxs_line)[1]
+
+                idxs_cont_l = np.where(rvs <= rv_peak_line - line_width / 2)
+                idxs_cont_r = np.where(rvs >= rv_peak_line + line_width / 2)
+                idxs_cont = np.concatenate([idxs_cont_l[0], idxs_cont_r[0]])
+
+                std_cont = np.nanstd(self.values[idxs_cont])
+
+                wvs_line = self.wvs[idxs_line]
+                spec_line = self.values[idxs_line]
+
+                # Line integration
+                flux_int = integrate.simpson(spec_line, wvs_line)
+
+                # Error on flux value
+                err_flux_int = 0
 
             # Plot
             if control_plot:

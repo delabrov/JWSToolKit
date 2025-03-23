@@ -453,7 +453,7 @@ class Cube:
 
                 fig, ax = plt.subplots(figsize=(6,5))
 
-                im = ax.imshow(integrated_map, origin='lower', cmap='magma', norm=colors.LogNorm())
+                im = ax.imshow(integrated_map, origin='lower', cmap='magma', vmin=1e-8, vmax=1.8e-7)
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("right", size="5%", pad=0.05)
                 cbar = fig.colorbar(im, cax=cax)
@@ -462,6 +462,7 @@ class Cube:
                 ax.set_title('Integrated line emission map @ {:.3f} µm'.format(wv_line))
 
                 fig.tight_layout()
+                #plt.savefig('line_emission_map.png', dpi=300)
                 plt.show()
                 plt.close()
 
@@ -469,8 +470,9 @@ class Cube:
 
             return integrated_map
     
-    def pv_diagram(self, wv_line: float, slit_position: list, slit_params: list[int], baseline_width: float = 1500., 
-        line_width: float = 200., range_diagram: float = 500, control_plot=False):
+    def pv_diagram(self, wv_line: float, slit_position: list, slit_params: list[int], 
+            baseline_width: float = 1500., line_width: float = 200., range_diagram: float = 500, 
+            control_plot=False):
         """Generate a position-velocity diagram from the data cube for an emission line.
 
         Parameters
