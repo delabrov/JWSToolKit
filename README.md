@@ -9,13 +9,17 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/delabrov/jwstoolkit/ci.yml?branch=main)](https://github.com/delabrov/jwstoolkit/actions)
 [![Documentation Status](https://readthedocs.org/projects/jwstoolkit/badge/?version=latest)](https://jwst-data-docs.readthedocs.io/en/latest/)
 [![codecov](https://codecov.io/gh/delabrov/JWSToolKit/graph/badge.svg?token=FTE2RPJTJ3)](https://codecov.io/gh/delabrov/JWSToolKit)
+![Static Badge](https://img.shields.io/badge/Pylint-7.64%2F10-green?style=flat)
+[![PyPI version](https://img.shields.io/pypi/v/jwstoolkit)](https://pypi.org/project/jwstoolkit/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/jwstoolkit)](https://pypi.org/project/jwstoolkit/)
+
 
 
 A python package for handling JWST observations 
 
 ## About
-JWSToolKit is an open-source python package designed to simplify the manipulation of observational data from the James Webb Space Telescope. 
-The package has been developed to manipulate spectra, images (under development) and data cubes from all JWST instruments.
+*JWSToolKit* is an open-source python package designed to simplify the manipulation of observational data from the James Webb Space Telescope. 
+The package has been developed to manipulate spectra, images and data cubes from all JWST instruments.
 
 ## Useful links
 - Package documentation: https://jwstoolkit.readthedocs.io/en/latest/
